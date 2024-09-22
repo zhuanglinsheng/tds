@@ -19,6 +19,12 @@ tds_deque *tds_deque_force_create(size_t elesize);
 tds_deque *tds_deque_free(tds_deque *q);
 
 size_t tds_dequq_nblks(const tds_deque * q);
+size_t tds_deque_len(const tds_deque * q);
+
+int tds_deque_push_front(tds_deque *q, void *ele);
+int tds_deque_push_back(tds_deque *q, void *ele);
+void *tds_deque_pop_front(tds_deque *q);
+void *tds_deque_pop_back(tds_deque *q);
 
 #ifdef __cplusplus
 }

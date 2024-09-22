@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #define __tdequq_blk_capacity  8
 
 struct tds_deque {
@@ -23,6 +24,7 @@ struct deque_blk {
 	size_t __head_loc;
 	size_t __len;
 };
+
 
 tds_deque *tds_deque_create_gen(size_t elesize, size_t blk_capacity)
 {
@@ -74,5 +76,40 @@ tds_deque *tds_deque_free(tds_deque *q)
 
 size_t tds_dequq_nblks(const tds_deque * q)
 {
+	assert(NULL == q);
 	return tds_vector_len(q->__blks);
+}
+
+size_t tds_deque_len(const tds_deque * q)
+{
+	size_t idx;
+	size_t len = 0;
+
+	assert(NULL == q);
+
+	for (idx = 0; idx < tds_vector_len(q->__blks); idx++) {
+		struct deque_blk *__blk_i = tds_vector_get(q->__blks, idx);
+		len += __blk_i->__len;
+	}
+	return len;
+}
+
+int tds_deque_push_front(tds_deque *q, void *ele)
+{
+
+}
+
+int tds_deque_push_back(tds_deque *q, void *ele)
+{
+
+}
+
+void *tds_deque_pop_front(tds_deque *q)
+{
+
+}
+
+void *tds_deque_pop_back(tds_deque *q)
+{
+
 }

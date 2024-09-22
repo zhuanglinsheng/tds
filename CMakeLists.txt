@@ -51,6 +51,7 @@ set(SOURCES
 	src/string.c
 	src/bitarray.c
 	src/array.c
+	src/linkedlist.c
 	src/vector.c
 	src/hashtbl.c
 	src/deque.c
