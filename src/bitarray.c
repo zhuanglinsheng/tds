@@ -81,18 +81,30 @@ void tds_bitarray_free(tds_bitarray *arr)
 int tds_bitarray_resize(tds_bitarray *arr, size_t new_capacity)
 {
 	void *new_data = NULL;
+	size_t new_nbyte;
 
 	assert(NULL != arr);
+	new_nbyte = arr->__nbyte;
 
-	if (new_capacity < 8 * arr->__nbyte)
+	if (new_capacity <= 8 * arr->__nbyte)  /* no need to resize */
 		return 1;  /* success */
-	if (NULL == (new_data = realloc(arr->__data, 2 * arr->__nbyte))) {
+	while (new_capacity > 8 * new_nbyte)  /* calculate the new number of bytes */
+		new_nbyte *= 2;
+	if (NULL == (new_data = realloc(arr->__data, new_nbyte))) {
 		printf("Error ... tds_array_resize\n");
 		return 0;  /* failure */
 	}
 	arr->__data = new_data;
-	arr->__nbyte *= 2;
+	arr->__nbyte = new_nbyte;
 	return 1;
+}
+
+void tds_bitarray_force_resize(tds_bitarray *arr, size_t new_capacity)
+{
+	if (!tds_bitarray_resize(arr, new_capacity)) {
+		printf("Error ... tds_bitarray_force_resize\n");
+		exit(-1);
+	}
 }
 
 size_t tds_bitarray_capacity(const tds_bitarray *arr)

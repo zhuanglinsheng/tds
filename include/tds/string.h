@@ -17,6 +17,7 @@ typedef struct tds_string  tds_string;
  */
 
 tds_string *tds_string_create(void);
+tds_string *tds_string_create_gen(size_t buffersize);
 tds_string *tds_string_create_from_cstr(const char *cstr, size_t n);
 tds_string *tds_string_create_substr(const tds_string *tstr, size_t pos, size_t n);
 tds_string *tds_string_create_substr2(const tds_string *tstr, size_t pos);
@@ -63,8 +64,8 @@ void tds_string_force_append_float64(tds_string *tstr, const double num, int sci
 int tds_string_2_float64(const tds_string *tstr, double *num);
 int tds_string_2_int64(const tds_string *tstr, long *num);
 
-void tds_string_popn(tds_string *tstr, size_t n);
-void tds_string_popn_front(tds_string *tstr, size_t n);
+void tds_string_pop_back(tds_string *tstr, size_t n);
+void tds_string_pop_front(tds_string *tstr, size_t n);
 
 size_t tds_string_find(const tds_string *tstr, const char *cstr, size_t n);
 size_t tds_string_find_last_of(const tds_string *tstr, const char *cstr, size_t n);

@@ -105,3 +105,11 @@ int tds_array_resize(tds_array *arr, size_t new_capacity)
 	arr->__capacity *= 2;
 	return 1;
 }
+
+void tds_array_force_resize(tds_array *arr, size_t new_capacity)
+{
+	if (!tds_array_resize(arr, new_capacity)) {
+		printf("Error ... tds_array_force_resize\n");
+		exit(-1);
+	}
+}

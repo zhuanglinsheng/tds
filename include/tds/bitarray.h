@@ -24,7 +24,10 @@ tds_bitarray *tds_bitarray_create(size_t capacity);
 tds_bitarray *tds_bitarray_force_create(size_t capacity);
 
 int tds_bitarray_resize(tds_bitarray *arr, size_t new_capacity);
+void tds_bitarray_force_resize(tds_bitarray *arr, size_t new_capacity);
+
 void tds_bitarray_free(tds_bitarray *arr);
+
 size_t tds_bitarray_capacity(const tds_bitarray *arr);
 void tds_bitarray_print(const tds_bitarray *arr);
 
@@ -32,7 +35,7 @@ void tds_bitarray_print(const tds_bitarray *arr);
  */
 void tds_bitarray_init(tds_bitarray *arr, int b);
 
-/* Input `b` is either 0 or 1
+/* Output is either 0 or 1
  */
 int tds_bitarray_get(const tds_bitarray *arr, size_t loc);
 

@@ -1,23 +1,30 @@
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-add_executable(test_tstring test_tstring.c)
-target_link_libraries(test_tstring tds)
+add_executable(test_array test_array.c)
+target_link_libraries(test_array tds)
 add_test(
-	NAME test_tstring
-	COMMAND test_tstring
+	NAME test_array
+	COMMAND test_array
 )
 
-add_executable(test_tbitarray test_tbitarray.c)
-target_link_libraries(test_tbitarray tds)
+add_executable(test_bitarray test_bitarray.c)
+target_link_libraries(test_bitarray tds)
 add_test(
-	NAME test_tbitarray
-	COMMAND test_tbitarray
+	NAME test_bitarray
+	COMMAND test_bitarray
 )
 
-
-add_executable(test_tarray test_tarray.c)
-target_link_libraries(test_tarray tds)
+add_executable(test_hashtbl test_hashtbl.c)
+target_link_libraries(test_hashtbl tds)
 add_test(
-	NAME test_tarray
-	COMMAND test_tarray
+	NAME test_hashtbl
+	COMMAND test_hashtbl
 )
+
+add_executable(test_string test_string.c)
+target_link_libraries(test_string tds)
+add_test(
+	NAME test_string
+	COMMAND test_string
+)
+

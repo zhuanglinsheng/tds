@@ -23,18 +23,21 @@ struct tds_string
  * Create tds_string
  *****************************************************************************/
 
-tds_string *tds_string_create(void)
+tds_string *tds_string_create_gen(size_t buffersize)
 {
 	tds_string * str = NULL;
 	char *data;
+	size_t c_str_cap = __tds_string_initlen;
 	str = (tds_string *) malloc(sizeof(tds_string));
 
 	if (NULL == str) {
 		printf("Error ... tds_string_create\n");
 		exit(-1);
 	}
-	data = (char *) malloc(__tds_string_initlen);
-	data[0] = '\0';
+	while (c_str_cap < buffersize)  /* get `c_str_cap` that covers buffersize */
+		c_str_cap *= 2;
+	data = (char *) malloc(c_str_cap);
+	memset(data, '\0', c_str_cap);
 
 	if (NULL == data) {
 		free(str);
@@ -42,9 +45,14 @@ tds_string *tds_string_create(void)
 		exit(-1);
 	}
 	str->data = data;
-	str->capacity = __tds_string_initlen;
+	str->capacity = c_str_cap;
 	str->len = 0;
 	return str;
+}
+
+tds_string *tds_string_create(void)
+{
+	return tds_string_create_gen(__tds_string_initlen);
 }
 
 tds_string *tds_string_create_substr(const tds_string *tstr, size_t pos, size_t n)
@@ -154,7 +162,7 @@ void tds_string_clear(tds_string *tstr)
 {
 	assert(NULL != tstr);
 
-	tstr->data[0] = '\0';
+	memset(tstr->data, '\0', tstr->capacity);
 	tstr->len = 0;
 }
 
@@ -166,14 +174,12 @@ void tds_string_clear(tds_string *tstr)
 size_t tds_string_len(const tds_string *tstr)
 {
 	assert(NULL != tstr);
-
 	return tstr->len;
 }
 
 const char *tds_string_cstr(const tds_string *tstr)
 {
 	assert(NULL != tstr);
-
 	return tstr->data;
 }
 
@@ -181,21 +187,18 @@ char tds_string_getc(const tds_string *tstr, size_t loc)
 {
 	assert(NULL != tstr);
 	assert(loc < tstr->len);
-
 	return tstr->data[loc];
 }
 
 char tds_string_getc_front(const tds_string *tstr)
 {
 	assert(NULL != tstr);
-
 	return tstr->data[0];
 }
 
 char tds_string_getc_back(const tds_string *tstr)
 {
 	assert(NULL != tstr);
-
 	return tstr->data[tstr->len - 1];
 }
 
@@ -203,21 +206,18 @@ void tds_string_setc(const tds_string *tstr, size_t loc, char c)
 {
 	assert(NULL != tstr);
 	assert(loc < tstr->len);
-
 	tstr->data[loc] = c;
 }
 
 void tds_string_setc_front(const tds_string *tstr, char c)
 {
 	assert(NULL != tstr);
-
 	tstr->data[0] = c;
 }
 
 void tds_string_setc_back(const tds_string *tstr, char c)
 {
 	assert(NULL != tstr);
-
 	tstr->data[tstr->len - 1] = c;
 }
 
@@ -381,16 +381,16 @@ void tds_string_force_append_float64(tds_string *tstr, const double num, int sci
  * Pop
  *****************************************************************************/
 
-void tds_string_popn(tds_string *tstr, size_t n)
+void tds_string_pop_back(tds_string *tstr, size_t n)
 {
 	assert(NULL != tstr);
 	assert(n <= tstr->len);
 
 	tstr->len -= n;
-	tstr->data[tstr->len] = '\0';
+	memset(tstr->data + tstr->len, '\0', n);
 }
 
-void tds_string_popn_front(tds_string *tstr, size_t n)
+void tds_string_pop_front(tds_string *tstr, size_t n)
 {
 	size_t idx = 0;
 
@@ -401,8 +401,8 @@ void tds_string_popn_front(tds_string *tstr, size_t n)
 		tstr->data[idx] = tstr->data[idx + n];
 		idx++;
 	}
-	tstr->data[idx] = '\0';
 	tstr->len -= n;
+	memset(tstr->data + tstr->len, '\0', n);
 }
 
 
@@ -536,7 +536,7 @@ TRIM_BACK:
 
 	if (end == '\n' || end == '\r'
 	 || end == '\t' || end == ' ' || end == EOF) {
-		tds_string_popn(tstr, 1);
+		tds_string_pop_back(tstr, 1);
 		goto TRIM_BACK;
 	}
 }
@@ -554,7 +554,7 @@ TRIM_FRONT:
 
 	if (bgn == '\n' || bgn == '\r'
 	 || bgn == '\t' || bgn == ' ' || bgn == EOF) {
-		tds_string_popn_front(tstr, 1);
+		tds_string_pop_front(tstr, 1);
 		goto TRIM_FRONT;
 	}
 }

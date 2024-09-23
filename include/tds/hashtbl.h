@@ -12,34 +12,18 @@
 extern "C" {
 #endif
 
+#define __tds_debug
+
 typedef struct tds_hashtbl  tds_hashtbl;
 
 tds_hashtbl *tds_hashtbl_create(size_t keysize, size_t valuesize);
 tds_hashtbl *tds_hashtbl_force_create(size_t keysize, size_t valuesize);
+
 void tds_hashtbl_free(tds_hashtbl *arr);
 
 size_t tds_hashtbl_usage(const tds_hashtbl *arr);
 size_t tds_hashtbl_capacity(const tds_hashtbl *arr);
 double tds_hashtbl_load_factor(const tds_hashtbl *arr);
-
-/* Core Hash algorithm
- */
-uint64_t __tds_hashtbl_code_fn(const void *key, size_t keysize, uint64_t base);
-
-/* Calculate the unique location for a given `key` in Hash-table `tbl`
- *
- * Parameter Notes:
- * 	1. _new_capacity == the capacity of `tbl` if you do not expand Hash-table
- * 	2. _new_capacity != the capacity of `tbl` if you expand Hash-table (used for rehash keys)
- * 	3. state is an OUTPUT parameter:
- * 		3.1. state = 0 if the location is free
- * 		3.2. state = 1 if the location is used
- */
-size_t __tds_hashtbl_get_loc(const tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state);
-
-/* Check the load factor and try to expand Hash-table
- */
-int __tds_hashtbl_try_expand(tds_hashtbl *tbl);
 
 /* Get the value of an existing pair
  * Return a NULL pointer if the key is not found
@@ -47,9 +31,14 @@ int __tds_hashtbl_try_expand(tds_hashtbl *tbl);
 void *tds_hashtbl_get(const tds_hashtbl *tbl, const void *key);
 
 /* Return a bool indicating success
+ *
+ * Note
+ * 	- the `key` can be existing or new
  */
 int tds_hashtbl_set(tds_hashtbl *tbl, const void *key, const void *value);
 
+/* On failure, exit the program
+ */
 void tds_hashtbl_force_set(tds_hashtbl *tbl, const void *key, const void *value);
 
 /* Set the value of an existing pair
@@ -57,7 +46,30 @@ void tds_hashtbl_force_set(tds_hashtbl *tbl, const void *key, const void *value)
  */
 void tds_hashtbl_force_set_existing(tds_hashtbl *tbl, const void *key, const void *ele);
 
+/* Remove an element from the `tbl`
+ */
 void tds_hashtbl_rm(tds_hashtbl *tbl, const void *key);
+
+/* Calculate the unique location for a given `key` in Hash-table `tbl`
+ *
+ * Note
+ * 	1. `_new_capacity` can be different from the current capacity of `tbl`
+ * 		- `_new_capacity` == the capacity of `tbl` if you do not expand Hash-table
+ * 		- `_new_capacity` > the capacity of `tbl` if you expand Hash-table and rehash keys
+ * 	2. `state` return 0 or 1, indeicating whether the location has elements
+ * 		- If the location is free (return 0), the location is for newly inserting elements
+ * 		- If the location has elements (return 1), the location is for changing existing elements
+ */
+size_t __tds_hashtbl_get_loc(
+#ifndef __tds_debug
+	const
+#endif
+	tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state);
+
+#ifdef __tds_debug
+size_t __tds_hashtbl_get_n_conflicts(const tds_hashtbl *tbl);
+void __tds_hashtbl_restore_n_conflicts(tds_hashtbl *tbl);
+#endif
 
 #ifdef __cplusplus
 }

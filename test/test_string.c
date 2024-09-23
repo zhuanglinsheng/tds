@@ -1,4 +1,4 @@
-#include <tds/tds_string.h>
+#include <tds/string.h>
 
 #include <stdio.h>
 #include <limits.h>
@@ -67,9 +67,9 @@ void test_tds_string(void)
 	printf("loc of `c` = %zu\n", tds_string_rfind_last_of(str, "d", 7));
 
 	/* popn */
-	tds_string_popn(str, 1);
+	tds_string_pop_back(str, 1);
 	printf(">>> pop(1),       len = %zu, str = '%s'\n", tds_string_len(str), tds_string_cstr(str));
-	tds_string_popn_front(str, 1);
+	tds_string_pop_front(str, 1);
 	printf(">>> pop_front(1), len = %zu, str = '%s'\n", tds_string_len(str), tds_string_cstr(str));
 
 	/* trim */
