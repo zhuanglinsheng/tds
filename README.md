@@ -4,6 +4,7 @@ This is a general-purpose data structure library implemented in the pure ISO C90
 
    - [x] [sting.h](./include/tds/string.h)
    - [x] [bitarray.h](./include/tds/bitarray.h)
+   - [ ] [nbitsarray.h](./include/tds/nbitsarray.h)
    - [x] [array.h](./include/tds/array.h)
    - [x] [linkedlist.h](./include/tds/linkedlist.h)
    - [x] [vector.h](./include/tds/vector.h)
@@ -20,7 +21,7 @@ This is a general-purpose data structure library implemented in the pure ISO C90
 
 ## Compare with C++ STL
 
-
+...
 
 ## Install
 
