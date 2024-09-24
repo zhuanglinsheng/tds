@@ -21,6 +21,13 @@ add_test(
 	COMMAND test_linkedlist
 )
 
+add_executable(test_deque test_deque.c)
+target_link_libraries(test_deque tds)
+add_test(
+	NAME test_deque
+	COMMAND test_deque
+)
+
 add_executable(test_hashtbl test_hashtbl.c)
 target_link_libraries(test_hashtbl tds)
 add_test(

@@ -94,22 +94,31 @@ size_t tds_deque_len(const tds_deque * q)
 	return len;
 }
 
+void *tds_deque_get(const tds_deque * q, size_t loc)
+{
+	return NULL;
+}
+
+void tds_deque_set(tds_deque * q, size_t loc, void *data)
+{
+}
+
 int tds_deque_push_front(tds_deque *q, void *ele)
 {
-
+	return 0;
 }
 
 int tds_deque_push_back(tds_deque *q, void *ele)
 {
-
+	return 0;
 }
 
 void *tds_deque_pop_front(tds_deque *q)
 {
-
+	return NULL;
 }
 
 void *tds_deque_pop_back(tds_deque *q)
 {
-
+	return NULL;
 }

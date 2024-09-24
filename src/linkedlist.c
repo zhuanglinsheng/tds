@@ -167,7 +167,7 @@ tds_linkedlist_node *tds_linkedlist_tail(const tds_linkedlist *list)
 	return list->__tail;
 }
 
-tds_linkedlist_node *tds_linkedlist_node_previous(const tds_linkedlist_node *iter)
+tds_linkedlist_node *tds_linkedlist_node_prev(const tds_linkedlist_node *iter)
 {
 	return iter->__prev;
 }
@@ -182,6 +182,80 @@ void *tds_linkedlist_node_data(const tds_linkedlist_node *iter)
 	return iter->__data;
 }
 
+int tds_linkedlist_insert_before(tds_linkedlist *list, tds_linkedlist_node *iter, void *data)
+{
+	tds_linkedlist_node *node_new = NULL;
+
+	assert(NULL != list);
+	assert(NULL != iter);
+	assert(NULL != data);
+
+	if (NULL == (node_new = __create_linkedlist_node(list->__elesize))) {
+		printf("Error ... tds_linkedlist_insert_before\n");
+		return 0;  /* failure */
+	}
+	node_new->__prev = iter->__prev;
+	node_new->__next = iter;
+	memcpy(node_new->__data, data, list->__elesize);
+
+	if (NULL != iter->__prev)
+		iter->__prev->__next = node_new;
+	else
+		list->__head = node_new;
+
+	iter->__prev = node_new;
+	list->__len++;
+	return 1;
+}
+
+int tds_linkedlist_insert_after(tds_linkedlist *list, tds_linkedlist_node *iter, void *data)
+{
+	tds_linkedlist_node *node_new = NULL;
+
+	assert(NULL != list);
+	assert(NULL != iter);
+	assert(NULL != data);
+
+	if (NULL == (node_new = __create_linkedlist_node(list->__elesize))) {
+		printf("Error ... tds_linkedlist_insert_before\n");
+		return 0;  /* failure */
+	}
+	node_new->__prev = iter;
+	node_new->__next = iter->__next;
+	memcpy(node_new->__data, data, list->__elesize);
+
+	if (NULL != iter->__next)
+		iter->__next->__prev = node_new;
+	else
+		list->__tail = node_new;
+
+	iter->__next = node_new;
+	list->__len++;
+	return 1;
+}
+
+void tds_linkedlist_delete_node(tds_linkedlist *list, tds_linkedlist_node *iter)
+{
+	assert(NULL != list);
+	assert(NULL != iter);
+
+	list->__len--;
+
+	if (list->__len == 0) {
+		list->__head = NULL;
+		list->__tail = NULL;
+	} else {
+		if (iter == list->__head)
+			list->__head = iter->__next;
+		if (iter == list->__tail)
+			list->__tail = iter->__prev;
+	}
+	if (NULL != iter->__next)
+		iter->__next->__prev = iter->__prev;
+	if (NULL != iter->__prev)
+		iter->__prev->__next = iter->__next;
+	__store_node_to_linkedlist_buffer(iter, list);
+}
 
 int tds_linkedlist_push_front(tds_linkedlist *list, void *data)
 {

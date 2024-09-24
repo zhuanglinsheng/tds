@@ -25,9 +25,17 @@ size_t tds_linkedlist_buffer_len(const tds_linkedlist *list);
 
 tds_linkedlist_node *tds_linkedlist_head(const tds_linkedlist *list);
 tds_linkedlist_node *tds_linkedlist_tail(const tds_linkedlist *list);
-tds_linkedlist_node *tds_linkedlist_node_previous(const tds_linkedlist_node *iter);
+tds_linkedlist_node *tds_linkedlist_node_prev(const tds_linkedlist_node *iter);
 tds_linkedlist_node *tds_linkedlist_node_next(const tds_linkedlist_node *iter);
+
+/* return the pointer to the data of `iter`
+ * 	Users can read or write on this pointer, hence `get` and `set` are not provided
+ */
 void *tds_linkedlist_node_data(const tds_linkedlist_node *iter);
+
+int tds_linkedlist_insert_before(tds_linkedlist *list, tds_linkedlist_node *iter, void *data);
+int tds_linkedlist_insert_after(tds_linkedlist *list, tds_linkedlist_node *iter, void *data);
+void tds_linkedlist_delete_node(tds_linkedlist *list, tds_linkedlist_node *iter);
 
 int tds_linkedlist_push_front(tds_linkedlist *list, void *data);
 int tds_linkedlist_push_back(tds_linkedlist *list, void *data);
