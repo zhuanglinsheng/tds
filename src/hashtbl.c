@@ -12,9 +12,109 @@
 #include <string.h>
 
 #define __thashtbl_init_capacity   16
-#define __thashtbl_load_threshold  0.7
-#define __thashtbl_default_base    431
+#define __thashtbl_load_threshold  0.75
+#define __thashtbl_default_base    367
 
+/* Test results of 100,000,000 key-value pairs, counting the total conflictions
+ *
+ * Note:
+ * Load factor is around 20% - 40%. See `test/test_hashtbl.c`
+ *
+ * | prim |  1,000,000 |  10,000,000 |  100,000,000 |
+ * | ---- | ---------- | ----------- | ------------ |
+ * |  13  |    254,677 |   1,810,393 |              |
+ * |  17  |    282,561 |   1,825,637 |              |
+ * |  19  |    322,992 |   3,751,867 |              |
+ * |  23  |    568,471 |     891,815 |              |
+ * |  29  |    175,504 |   2,481,449 |              |
+ * |  31  |    689,364 |   3,956,252 |              |
+ * |  37  |    390,750 |   2,075,701 |              |
+ * |  41  |    282,088 |     858,399 |              |
+ * |  43  |    535,560 |   1,313,095 |              |
+ * |  47  |    288,020 |   2,274,344 |              |
+ * |  53  |    339,329 |   2,137,211 |              |
+ * |  59  |    278,367 |     957,101 |              |
+ * |  61  |    195,273 |   2,164,114 |              |
+ * |  67  |    349,482 |   4,487,439 |              |
+ * |  71  |    258,043 |   1,015,314 |              |
+ * |  73  |    819,659 |   2,520,886 |              |
+ * |  79  |    250,145 |     832,997 |              |
+ * |  83  |    132,799 |   1,127,806 |              |
+ * |  89  |    156,396 |   1,631,691 |              |
+ * |  97  |    538,955 |   3,089,063 |              |
+ * | 101  |    297,211 |     961,811 |              |
+ * | 103  |    189,988 |     918,970 |              |
+ * | 107  |    333,492 |   1,340,713 |              |
+ * | 109  |    743,002 |   1,513,836 |              |
+ * | 113  |    333,293 |   2,051,708 |              |
+ * | 127  | 14,386,873 |  47,066,592 |              |
+ * | 131  |    185,299 |   2,110,784 |              |
+ * | 137  |    229,833 |   1,324,296 |              |
+ * | 139  |    288,627 |   1,456,837 |              |
+ * | 149  |    542,476 |   1,843,235 |              |
+ * | 151  |    208,122 |     827,972 |              |
+ * | 157  |    227,202 |   1,832,950 |              |
+ * | 163  |    292,412 |   1,171,459 |              |
+ * | 167  |    291,104 |   1,448,417 |              |
+ * | 173  |    289,708 |   1,714,152 |              |
+ * | 179  |    280,400 |   2,496,113 |              |
+ * | 181  |    428,376 |   3,247,992 |              |
+ * | 191  |  2,541,637 |  15,165,678 |              |
+ * | 193  |  2,672,284 |  14,806,009 |              |
+ * | 197  |    147,151 |     870,027 |              |
+ * | 199  |    505,277 |   1,789,141 |              |
+ * | 211  |    893,109 |   2,066,069 |              |
+ * | 223  |    535,430 |   2,830,929 |              |
+ * | 227  |    196,969 |   1,114,904 |              |
+ * | 229  |    248,974 |   1,657,697 |              |
+ * | 233  |    268,220 |   1,383,649 |              |
+ * | 239  |    313,925 |   2,150,900 |              |
+ * | 241  |    401,029 |   1,680,264 |              |
+ * | 251  |    363,454 |   1,473,134 |              |
+ * | 257  | 22,719,070 | 464,954,344 |              |
+ * | 263  |    634,143 |   2,419,988 |              |
+ * | 269  |    227,019 |   1,817,864 |              |
+ * | 271  |    218,656 |   2,984,116 |              |
+ * | 277  |    326,324 |   1,093,931 |              |
+ * | 281  |    564,831 |   1,396,687 |              |
+ * | 283  |  1,184,666 |   2,537,050 |              |
+ * | 293  |    295,100 |   1,622,604 |              |
+ * | 307  |    311,510 |   1,104,937 |              |
+ * | 311  |    854,688 |   1,151,211 |              |
+ * | 313  |    185,325 |   3,609,561 |              |
+ * | 317  |    347,620 |     828,801 |              |
+ * | 331  |    258,504 |   1,967,779 |              |
+ * | 337  |    304,634 |   1,371,804 |              |
+ * | 347  |    340,222 |   1,958,599 |              |
+ * | 349  |    210,856 |     848,136 |              |
+ * | 353  |    477,158 |   2,062,634 |              |
+ * | 359  |    264,153 |   2,554,342 |              |
+ * | 367  |    122,435 |     641,442 |   17,126,217 |
+ * | 373  |    329,602 |   1,196,194 |              |
+ * | 379  |    319,964 |   1,227,605 |              |
+ * | 383  | 14,635,708 |  48,194,127 |              |
+ * | 389  |    296,223 |   1,838,127 |              |
+ * | 397  |    832,162 |   2,808,716 |              |
+ * | 401  |    651,589 |   1,586,482 |              |
+ * | 409  |    349,236 |   1,809,507 |              |
+ * | 419  |    326,571 |   3,044,083 |              |
+ * | 421  |    736,152 |   2,117,233 |              |
+ * | 431  |    213,512 |   1,867,724 |              |
+ * | 433  |    516,930 |   1,621,813 |              |
+ * | 439  |    215,614 |   1,668,819 |              |
+ * | 443  |    591,346 |   4,027,463 |              |
+ * | 449  |  2,443,250 |  15,437,502 |              |
+ * | 457  |    386,981 |   2,904,237 |              |
+ * | 461  |    587,353 |   1,354,406 |              |
+ * | 463  |    330,964 |   2,262,520 |              |
+ * | 467  |    228,730 |     621,561 |   24,177,312 |
+ * | 479  |    806,742 |   3,220,566 |              |
+ * | 487  |    393,394 |   2,060,740 |              |
+ * | 491  |    298,330 |     864,481 |              |
+ * | 499  |    452,754 |   7,978,167 |              |
+ * | 503  |    318,007 |   1,514,110 |              |
+ * | 509  |    304,624 |   1,586,846 |              |
+ */
 
 /* Core Hash algorithm
  */
@@ -25,67 +125,76 @@ uint64_t __tds_hashtbl_code_fn(const void *key, size_t keysize, uint64_t base);
  */
 int __tds_hashtbl_try_expand(tds_hashtbl *tbl);
 
-struct tds_hashtbl
-{
-	tds_bitarray *__markers;
+struct tds_hashtbl {
+	tds_bitarray *__mark_delete;
 	tds_array *__keys;
 	tds_array *__values;
 	size_t __usage;
-#ifdef __tds_debug
-	size_t __n_conflicts;
-#endif
 };
 
-tds_hashtbl *tds_hashtbl_create(size_t key_size, size_t value_size)
+#ifdef __tds_debug
+size_t __n_conflicts = 0;
+#endif
+
+tds_hashtbl *tds_hashtbl_create_gen(size_t key_size, size_t value_size, size_t init_capacity)
 {
 	tds_hashtbl *tbl = (tds_hashtbl *) malloc(sizeof(tds_hashtbl));
+	size_t capacity = __thashtbl_init_capacity;
 
+	while (capacity < init_capacity)
+		capacity *= 2;
 	if (NULL == tbl) {
-		printf("Error ... tds_hashtbl_create\n");
+		printf("Error ... tds_hashtbl_create_gen\n");
 		return NULL;
 	}
-	if (NULL == (tbl->__keys = tds_array_create(key_size, __thashtbl_init_capacity))) {
+	if (NULL == (tbl->__keys = tds_array_create(key_size, capacity))) {
 		free(tbl);
-		printf("Error ... tds_hashtbl_create\n");
+		printf("Error ... tds_hashtbl_create_gen\n");
 		return NULL;
 	}
-	if (NULL == (tbl->__values = tds_array_create(value_size, __thashtbl_init_capacity))) {
+	if (NULL == (tbl->__values = tds_array_create(value_size, capacity))) {
 		free(tbl->__keys);
 		free(tbl);
-		printf("Error ... tds_hashtbl_create\n");
+		printf("Error ... tds_hashtbl_create_gen\n");
 		return NULL;
 	}
-	if (NULL == (tbl->__markers = tds_bitarray_create(__thashtbl_init_capacity))) {
+	if (NULL == (tbl->__mark_delete = tds_bitarray_create(capacity))) {
 		free(tbl->__keys);
 		free(tbl->__values);
 		free(tbl);
-		printf("Error ... tds_hashtbl_create\n");
+		printf("Error ... tds_hashtbl_create_gen\n");
 		return NULL;
 	}
-	tds_bitarray_init(tbl->__markers, 0);
 	tbl->__usage = 0;
-#ifdef __tds_debug
-	tbl->__n_conflicts = 0;
-#endif
+	return tbl;
+}
+
+tds_hashtbl *tds_hashtbl_create(size_t key_size, size_t value_size)
+{
+	return tds_hashtbl_create_gen(key_size, value_size, __thashtbl_init_capacity);
+}
+
+tds_hashtbl *tds_hashtbl_force_create_gen(size_t key_size, size_t value_size, size_t init_capacity)
+{
+	tds_hashtbl *tbl = tds_hashtbl_create_gen(key_size, value_size, init_capacity);
+
+	if (NULL == tbl) {
+		printf("Error ... tds_hashtbl_force_create_gen\n");
+		exit(-1);
+	}
 	return tbl;
 }
 
 tds_hashtbl *tds_hashtbl_force_create(size_t key_size, size_t value_size)
 {
-	tds_hashtbl *tbl = tds_hashtbl_create(key_size, value_size);
-
-	if (NULL == tbl) {
-		printf("Error ... tds_hashtbl_force_create\n");
-		exit(-1);
-	}
-	return tbl;
+	return tds_hashtbl_force_create_gen(key_size, value_size, __thashtbl_init_capacity);
 }
 
 void tds_hashtbl_free(tds_hashtbl *tbl)
 {
 	assert(NULL != tbl);
 
-	tds_bitarray_free(tbl->__markers);
+	tds_bitarray_free(tbl->__mark_delete);
 	tds_array_free(tbl->__keys);
 	tds_array_free(tbl->__values);
 	free(tbl);
@@ -109,25 +218,37 @@ double tds_hashtbl_load_factor(const tds_hashtbl *tbl)
 	return ((double) tds_hashtbl_usage(tbl)) / ((double) tds_hashtbl_capacity(tbl));
 }
 
+int tds_hashtbl_contains(const tds_hashtbl *tbl, const void *key, size_t *loc)
+{
+	int occupied = 0;
+	*loc = __tds_hashtbl_get_loc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
+
+	if (!occupied)
+		return 0;
+	if (tds_bitarray_get(tbl->__mark_delete, *loc))
+		return 0;
+	return 1;
+}
+
 void *tds_hashtbl_get(const tds_hashtbl *tbl, const void *key)
 {
-	int state = 0;
-	size_t loc = __tds_hashtbl_get_loc(tbl, key, tds_hashtbl_capacity(tbl), &state);
-	if (state)  /* the location is used */
-		return tds_array_get(tbl->__values, loc);
-	else        /* the location is free */
+	int occupied = 0;
+	size_t loc = __tds_hashtbl_get_loc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
+
+	if (!occupied)  /* the location is free */
 		return NULL;
+	if (tds_bitarray_get(tbl->__mark_delete, loc))  /* the location has been deleted */
+		return NULL;
+	return tds_array_get(tbl->__values, loc);
 }
 
 int tds_hashtbl_set(tds_hashtbl *tbl, const void *key, const void *value)
 {
-	int state = 0;
-	size_t loc = __tds_hashtbl_get_loc(tbl, key, tds_hashtbl_capacity(tbl), &state);
+	int occupied = 0;
+	size_t loc = __tds_hashtbl_get_loc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
 
-	if (!state) {  /* the location is originally free */
-		tds_bitarray_set(tbl->__markers, loc, 1);
+	if (!occupied)  /* the location is originally free */
 		tbl->__usage++;
-	}
 	tds_array_set(tbl->__keys, loc, key);
 	tds_array_set(tbl->__values, loc, value);
 
@@ -146,28 +267,14 @@ void tds_hashtbl_force_set(tds_hashtbl *tbl, const void *key, const void *value)
 	}
 }
 
-void tds_hashtbl_force_set_existing(tds_hashtbl *tbl, const void *key, const void *ele)
+int tds_hashtbl_rm(tds_hashtbl *tbl, const void *key)
 {
-	int state = 0;
-	size_t loc = __tds_hashtbl_get_loc(tbl, key, tds_hashtbl_capacity(tbl), &state);
+	size_t loc = 0;
 
-	if (state)  /* find the key */
-		tds_array_set(tbl->__values, loc, ele);
-	else {
-		printf("Error .. tds_hashtbl_force_set_existing\n");
-		exit(-1);
-	}
-}
-
-void tds_hashtbl_rm(tds_hashtbl *tbl, const void *key)
-{
-	int state = 0;
-	size_t loc = __tds_hashtbl_get_loc(tbl, key, tds_hashtbl_capacity(tbl), &state);
-
-	if (state) {
-		tds_bitarray_set(tbl->__markers, loc, 0);
-		tbl->__usage--;
-	}
+	if (!tds_hashtbl_contains(tbl, key, &loc))
+		return 0;
+	tds_bitarray_set(tbl->__mark_delete, loc, 1);
+	return 1;
 }
 
 /******************************************************************************
@@ -187,11 +294,20 @@ uint64_t __tds_hashtbl_code_fn(const void *key, size_t keysize, uint64_t base)
 	return code;
 }
 
-size_t __tds_hashtbl_get_loc(
-#ifndef __tds_debug
-		const
-#endif
-		tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state)
+static int __is_key_empty(const tds_hashtbl *tbl, size_t loc)
+{
+	size_t idx = 0;
+	size_t keysize = tds_array_elesize(tbl->__keys);
+	unsigned char *key = (unsigned char *) tds_array_get(tbl->__keys, loc);
+
+	for (idx = 0; idx < keysize; idx++) {
+		if (key[idx] != 0)
+			return 0;
+	}
+	return 1;
+}
+
+size_t __tds_hashtbl_get_loc(const tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state)
 {
 	size_t key_size = tds_array_elesize(tbl->__keys);
 	size_t code = __tds_hashtbl_code_fn(key, key_size, __thashtbl_default_base);
@@ -201,7 +317,7 @@ size_t __tds_hashtbl_get_loc(
 SEARCH:
 	loc = (code + explorer_1 * explorer_1 * explorer_2) % _new_capacity;
 
-	if (!tds_bitarray_get(tbl->__markers, loc)) {
+	if (__is_key_empty(tbl, loc)) {
 		*state = 0;  /* loc is free */
 		return loc;
 	} else if (0 == memcmp(key, tds_array_get(tbl->__keys, loc), key_size)) {
@@ -212,7 +328,7 @@ SEARCH:
 			explorer_1++;
 		explorer_2 *= -1;
 #ifdef __tds_debug
-		tbl->__n_conflicts++;
+		__n_conflicts++;
 #endif
 		goto SEARCH;
 	}
@@ -224,7 +340,7 @@ int __tds_hashtbl_try_expand(tds_hashtbl *tbl)
 	size_t value_size;
 	size_t new_capacity;
 	size_t idx;
-	tds_bitarray *new_markers = NULL;
+	tds_bitarray *new_delete_marker = NULL;
 	tds_array *new_keys = NULL;
 	tds_array *new_values = NULL;
 	tds_hashtbl new_table;
@@ -237,7 +353,7 @@ int __tds_hashtbl_try_expand(tds_hashtbl *tbl)
 	value_size = tds_array_elesize(tbl->__values);
 	new_capacity = 2 * tds_hashtbl_capacity(tbl);
 
-	if (NULL == (new_markers = tds_bitarray_create(new_capacity))) {
+	if (NULL == (new_delete_marker = tds_bitarray_create(new_capacity))) {
 		printf("Error .. __tds_hashtbl_try_expand\n");
 		return 0;
 	}
@@ -251,34 +367,36 @@ int __tds_hashtbl_try_expand(tds_hashtbl *tbl)
 	}
 	new_table.__keys = new_keys;
 	new_table.__values = new_values;
-	tds_bitarray_init(new_markers, 0);
-	new_table.__markers = new_markers;
+	tds_bitarray_init(new_delete_marker, 0);
+	new_table.__mark_delete = new_delete_marker;
 	new_table.__usage = 0;
 
 	/* searching old hashtable, rehash keys */
 	for (idx = 0; idx < tds_hashtbl_capacity(tbl); idx++) {
-		if (!tds_bitarray_get(tbl->__markers, idx))  /* not used */
+		if (__is_key_empty(tbl, idx))  /* not used */
+			continue;
+		if (tds_bitarray_get(tbl->__mark_delete, idx))  /* deleted */
 			continue;
 		tds_hashtbl_set(&new_table, \
 			tds_array_get(tbl->__keys, idx), tds_array_get(tbl->__values, idx));
 	}
 	tds_array_free(tbl->__keys);
 	tds_array_free(tbl->__values);
-	tds_bitarray_free(tbl->__markers);
+	tds_bitarray_free(tbl->__mark_delete);
 
 	tbl->__keys = new_keys;
 	tbl->__values = new_values;
-	tbl->__markers = new_markers;
+	tbl->__mark_delete = new_delete_marker;
 	return 1;
 }
 
 #ifdef __tds_debug
 size_t __tds_hashtbl_get_n_conflicts(const tds_hashtbl *tbl)
 {
-	return tbl->__n_conflicts;
+	return __n_conflicts;
 }
-void __tds_hashtbl_restore_n_conflicts(tds_hashtbl *tbl)
+void __tds_hashtbl_reset_n_conflicts(tds_hashtbl *tbl)
 {
-	tbl->__n_conflicts = 0;
+	__n_conflicts = 0;
 }
 #endif

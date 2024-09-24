@@ -156,14 +156,30 @@ size_t tds_linkedlist_buffer_len(const tds_linkedlist *list)
 	return len;
 }
 
-tds_linkedlist_node *tsd_linkedlist_head(const tds_linkedlist *list)
+
+tds_linkedlist_node *tds_linkedlist_head(const tds_linkedlist *list)
 {
 	return list->__head;
 }
 
-tds_linkedlist_node *tsd_linkedlist_last(const tds_linkedlist *list)
+tds_linkedlist_node *tds_linkedlist_tail(const tds_linkedlist *list)
 {
 	return list->__tail;
+}
+
+tds_linkedlist_node *tds_linkedlist_node_previous(const tds_linkedlist_node *iter)
+{
+	return iter->__prev;
+}
+
+tds_linkedlist_node *tds_linkedlist_node_next(const tds_linkedlist_node *iter)
+{
+	return iter->__next;
+}
+
+void *tds_linkedlist_node_data(const tds_linkedlist_node *iter)
+{
+	return iter->__data;
 }
 
 
@@ -208,7 +224,6 @@ int tds_linkedlist_push_back(tds_linkedlist *list, void *data)
 	memcpy(node->__data, data, list->__elesize);  /* node->__data is a valid pointer to a free space */
 	node->__next = NULL;
 	node->__prev = list->__tail;
-
 	if (NULL != node->__prev)
 		node->__prev->__next = node;
 
@@ -270,7 +285,7 @@ int tds_linkedlist_insert(tds_linkedlist *list, void *data, size_t n)
 }
 
 
-void tsd_linkedlist_pop_front(tds_linkedlist *list)
+void tds_linkedlist_pop_front(tds_linkedlist *list)
 {
 	tds_linkedlist_node *node = NULL;
 
@@ -290,7 +305,7 @@ void tsd_linkedlist_pop_front(tds_linkedlist *list)
 	__store_node_to_linkedlist_buffer(node, list);
 }
 
-void tsd_linkedlist_pop_back(tds_linkedlist *list)
+void tds_linkedlist_pop_back(tds_linkedlist *list)
 {
 	tds_linkedlist_node *node = NULL;
 
@@ -310,7 +325,7 @@ void tsd_linkedlist_pop_back(tds_linkedlist *list)
 	__store_node_to_linkedlist_buffer(node, list);
 }
 
-void tsd_linkedlist_delete(tds_linkedlist *list, size_t n)
+void tds_linkedlist_delete(tds_linkedlist *list, size_t n)
 {
 	tds_linkedlist_node *node = NULL;
 	size_t idx = 0;
@@ -332,9 +347,9 @@ void tsd_linkedlist_delete(tds_linkedlist *list, size_t n)
 		list->__tail = NULL;
 	} else {
 		if (node == list->__head)
-			list->__head == node->__next;
+			list->__head = node->__next;
 		if (node == list->__tail)
-			list->__tail == node->__prev;
+			list->__tail = node->__prev;
 	}
 	if (NULL != node->__next)
 		node->__next->__prev = node->__prev;

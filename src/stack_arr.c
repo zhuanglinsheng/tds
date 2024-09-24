@@ -52,7 +52,7 @@ void *tds_stack_getfront(const tds_stack_arr *stk)
 
 void tds_stack_setfront(tds_stack_arr *stk, void *ele)
 {
-	return tds_vector_set(stk, tds_vector_len(stk) - 1, ele);
+	tds_vector_set(stk, tds_vector_len(stk) - 1, ele);
 }
 
 void *tds_stack_getback(const tds_stack_arr *stk)
@@ -67,7 +67,7 @@ void tds_stack_setback(tds_stack_arr *stk, void *ele)
 
 int tds_stack_pushfront(tds_stack_arr *stk, const void *ele)
 {
-	tds_vector_pushback(stk, ele);
+	return tds_vector_pushback(stk, ele);
 }
 
 void *tds_stack_popfront(tds_stack_arr *stk)

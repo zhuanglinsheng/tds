@@ -16,6 +16,8 @@ extern "C" {
 
 typedef struct tds_hashtbl  tds_hashtbl;
 
+tds_hashtbl *tds_hashtbl_create_gen(size_t keysize, size_t valuesize, size_t init_capacity);
+tds_hashtbl *tds_hashtbl_force_create_gen(size_t keysize, size_t valuesize, size_t init_capacity);
 tds_hashtbl *tds_hashtbl_create(size_t keysize, size_t valuesize);
 tds_hashtbl *tds_hashtbl_force_create(size_t keysize, size_t valuesize);
 
@@ -41,14 +43,14 @@ int tds_hashtbl_set(tds_hashtbl *tbl, const void *key, const void *value);
  */
 void tds_hashtbl_force_set(tds_hashtbl *tbl, const void *key, const void *value);
 
-/* Set the value of an existing pair
- * 	return a bool indicating the key found
+/* Return a boolean
  */
-void tds_hashtbl_force_set_existing(tds_hashtbl *tbl, const void *key, const void *ele);
+int tds_hashtbl_contains(const tds_hashtbl *tbl, const void *key, size_t *loc);
 
 /* Remove an element from the `tbl`
+ * Return a boolean indicating success.
  */
-void tds_hashtbl_rm(tds_hashtbl *tbl, const void *key);
+int tds_hashtbl_rm(tds_hashtbl *tbl, const void *key);
 
 /* Calculate the unique location for a given `key` in Hash-table `tbl`
  *
@@ -60,15 +62,11 @@ void tds_hashtbl_rm(tds_hashtbl *tbl, const void *key);
  * 		- If the location is free (return 0), the location is for newly inserting elements
  * 		- If the location has elements (return 1), the location is for changing existing elements
  */
-size_t __tds_hashtbl_get_loc(
-#ifndef __tds_debug
-	const
-#endif
-	tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state);
+size_t __tds_hashtbl_get_loc(const tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state);
 
 #ifdef __tds_debug
 size_t __tds_hashtbl_get_n_conflicts(const tds_hashtbl *tbl);
-void __tds_hashtbl_restore_n_conflicts(tds_hashtbl *tbl);
+void __tds_hashtbl_reset_n_conflicts(tds_hashtbl *tbl);
 #endif
 
 #ifdef __cplusplus

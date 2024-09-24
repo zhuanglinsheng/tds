@@ -23,19 +23,20 @@ void tds_linkedlist_free(tds_linkedlist *list);
 size_t tds_linkedlist_len(const tds_linkedlist *list);
 size_t tds_linkedlist_buffer_len(const tds_linkedlist *list);
 
-tds_linkedlist_node *tsd_linkedlist_head(const tds_linkedlist *list);
-tds_linkedlist_node *tsd_linkedlist_last(const tds_linkedlist *list);
+tds_linkedlist_node *tds_linkedlist_head(const tds_linkedlist *list);
+tds_linkedlist_node *tds_linkedlist_tail(const tds_linkedlist *list);
+tds_linkedlist_node *tds_linkedlist_node_previous(const tds_linkedlist_node *iter);
+tds_linkedlist_node *tds_linkedlist_node_next(const tds_linkedlist_node *iter);
+void *tds_linkedlist_node_data(const tds_linkedlist_node *iter);
 
 int tds_linkedlist_push_front(tds_linkedlist *list, void *data);
 int tds_linkedlist_push_back(tds_linkedlist *list, void *data);
 
-void tsd_linkedlist_pop_front(tds_linkedlist *list);
-void tsd_linkedlist_pop_back(tds_linkedlist *list);
+void tds_linkedlist_pop_front(tds_linkedlist *list);
+void tds_linkedlist_pop_back(tds_linkedlist *list);
 
 int tds_linkedlist_insert(tds_linkedlist *list, void *data, size_t n);
-void tsd_linkedlist_delete(tds_linkedlist *list, size_t n);
-
-
+void tds_linkedlist_delete(tds_linkedlist *list, size_t n);
 
 #ifdef __cplusplus
 }
