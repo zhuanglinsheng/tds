@@ -6,13 +6,13 @@
 #define __T_STACK_ARR_H__
 
 #include <stddef.h>
-#include <tds/vector.h>
+#include <tds/arraylist.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef tds_vector  tds_stack_arr;
+typedef tds_arraylist  tds_stack_arr;
 
 /* On failure, exit the program
  */
@@ -40,9 +40,9 @@ void tds_stack_setfront(tds_stack_arr *stk, void *ele);
 void *tds_stack_getback(const tds_stack_arr *stk);
 void tds_stack_setback(tds_stack_arr *stk, void *ele);
 
-int tds_stack_pushfront(tds_stack_arr *vec, const void *ele);
-void *tds_stack_popfront(tds_stack_arr *vec);
-void tds_stack_clear(tds_stack_arr *vec);
+int tds_stack_pushfront(tds_stack_arr *stk, const void *ele);
+void *tds_stack_popfront(tds_stack_arr *stk);
+void tds_stack_clear(tds_stack_arr *stk);
 
 #ifdef __cplusplus
 }

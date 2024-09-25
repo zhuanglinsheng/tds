@@ -7,6 +7,13 @@ add_test(
 	COMMAND test_array
 )
 
+add_executable(test_arraylist test_arraylist.c)
+target_link_libraries(test_arraylist tds)
+add_test(
+	NAME test_arraylist
+	COMMAND test_arraylist
+)
+
 add_executable(test_bitarray test_bitarray.c)
 target_link_libraries(test_bitarray tds)
 add_test(

@@ -15,6 +15,15 @@
 #define __thashtbl_load_threshold  0.75
 #define __thashtbl_default_base    367
 
+/* Core Hash algorithm
+ */
+uint64_t __tds_hashtbl_code_fn(const void *key, size_t keysize, uint64_t base);
+
+/* Check the load factor and try to expand Hash-table
+ * Return a bool indicating the success
+ */
+int __tds_hashtbl_try_expand(tds_hashtbl *tbl);
+
 /* Test results of 100,000,000 key-value pairs, counting the total conflictions
  *
  * Note:
@@ -116,19 +125,10 @@
  * | 509  |    304,624 |   1,586,846 |              |
  */
 
-/* Core Hash algorithm
- */
-uint64_t __tds_hashtbl_code_fn(const void *key, size_t keysize, uint64_t base);
-
-/* Check the load factor and try to expand Hash-table
- * Return a bool indicating the success
- */
-int __tds_hashtbl_try_expand(tds_hashtbl *tbl);
-
 struct tds_hashtbl {
-	tds_bitarray *__mark_delete;
-	tds_array *__keys;
-	tds_array *__values;
+	tds_bitarray *__mark_delete;  /* created by bitarray construction function */
+	tds_array *__keys;            /* created by array construction function */
+	tds_array *__values;          /* created by array construction function */
 	size_t __usage;
 };
 
@@ -395,6 +395,7 @@ size_t __tds_hashtbl_get_n_conflicts(const tds_hashtbl *tbl)
 {
 	return __n_conflicts;
 }
+
 void __tds_hashtbl_reset_n_conflicts(tds_hashtbl *tbl)
 {
 	__n_conflicts = 0;

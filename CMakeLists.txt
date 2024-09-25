@@ -52,7 +52,7 @@ set(SOURCES
 	src/bitarray.c
 	src/array.c
 	src/linkedlist.c
-	src/vector.c
+	src/arraylist.c
 	src/hashtbl.c
 	src/deque.c
 	src/stack_arr.c

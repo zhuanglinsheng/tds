@@ -21,14 +21,14 @@ struct tds_linkedlist_node
 
 struct tds_linkedlist
 {
-	tds_linkedlist_node *__head;
-	tds_linkedlist_node *__tail;
 	size_t __elesize;
 	size_t __len;
+	tds_linkedlist_node *__head;
+	tds_linkedlist_node *__tail;
 
 	/* buffer stack */
-	tds_linkedlist_node *__buffer_head;  /* only pointer to next is valid */
 	size_t __buffer_limit;
+	tds_linkedlist_node *__buffer_head;  /* only pointer to next is valid */
 };
 
 

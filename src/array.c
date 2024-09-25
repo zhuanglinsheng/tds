@@ -10,7 +10,7 @@
 #include <string.h>
 
 struct tds_array {
-	void *__data;
+	void *__data;  /* created by `malloc` */
 	size_t __capacity;
 	size_t __elesize;
 };
@@ -78,15 +78,15 @@ void *tds_array_get(const tds_array *arr, size_t loc)
 	return p + arr->__elesize * loc;
 }
 
-void tds_array_set(tds_array *vec, size_t loc, const void *ele)
+void tds_array_set(tds_array *arr, size_t loc, const void *ele)
 {
-	char *p = (char *)(vec->__data);
+	char *p = (char *)(arr->__data);
 
-	assert(NULL != vec);
+	assert(NULL != arr);
 	assert(NULL != ele);
-	assert(loc < vec->__capacity);
+	assert(loc < arr->__capacity);
 
-	memcpy(p + vec->__elesize * loc, ele, vec->__elesize);
+	memcpy(p + arr->__elesize * loc, ele, arr->__elesize);
 }
 
 int tds_array_resize(tds_array *arr, size_t new_capacity)

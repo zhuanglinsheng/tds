@@ -10,7 +10,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-void print_binary(unsigned char num)
+struct tds_bitarray
+{
+	void *__data;  /* created by malloc */
+	size_t __nbyte;
+};
+
+static void print_binary(unsigned char num)
 {
 	int i;
 
@@ -20,12 +26,6 @@ void print_binary(unsigned char num)
 	}
 	printf(" ");
 }
-
-struct tds_bitarray
-{
-	void *__data;
-	size_t __nbyte;
-};
 
 void tds_bitarray_print(const tds_bitarray *arr)
 {
@@ -91,7 +91,7 @@ int tds_bitarray_resize(tds_bitarray *arr, size_t new_capacity)
 	while (new_capacity > 8 * new_nbyte)  /* calculate the new number of bytes */
 		new_nbyte *= 2;
 	if (NULL == (new_data = realloc(arr->__data, new_nbyte))) {
-		printf("Error ... tds_array_resize\n");
+		printf("Error ... tds_bitarray_resize\n");
 		return 0;  /* failure */
 	}
 	arr->__data = new_data;
