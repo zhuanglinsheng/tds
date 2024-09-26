@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Zhuang Linsheng <zhuanglinsheng@outlook.com>
+ * Copyright (C) 2024 Zhuang Linsheng <zhuanglinsheng@outlook.com>
  * License: MIT <https://opensource.org/licenses/MIT>
  */
 #ifndef __T_STACK_LST_H__
