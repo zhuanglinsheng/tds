@@ -11,6 +11,11 @@
 extern "C" {
 #endif
 
+/******************************************************************************
+ * String Builder
+ *
+ *
+ *****************************************************************************/
 typedef struct tds_string  tds_string;
 
 /* On failure, return a `NULL` pointer

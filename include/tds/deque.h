@@ -11,6 +11,11 @@
 extern "C" {
 #endif
 
+/******************************************************************************
+ * Deque
+ *
+ *
+ *****************************************************************************/
 typedef struct tds_deque  tds_deque;
 
 tds_deque *tds_deque_create_gen(size_t elesize, size_t blk_capacity, size_t buffer_lim);

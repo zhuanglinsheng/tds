@@ -49,7 +49,7 @@ void test_1(void)
  * 	- tds_deque_get
  * 	- tds_deque_set
  */
-void test_2()
+void test_2(void)
 {
 	tds_deque *q = tds_deque_create_gen(sizeof(size_t), 16, 8);
 	size_t idx = 0;

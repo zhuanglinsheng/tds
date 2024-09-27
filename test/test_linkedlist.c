@@ -11,13 +11,13 @@
  * testing iteration
  * 	- tds_linkedlist_head
  * 	- tds_linkedlist_tail
- * 	- tds_linkedlist_node_next
- * 	- tds_linkedlist_node_prev
+ * 	- tds_linkedlist_iter_next
+ * 	- tds_linkedlist_iter_prev
  */
 void test_1(void)
 {
 	tds_linkedlist *list = tds_linkedlist_create(sizeof(long));
-	tds_linkedlist_node *iter = NULL;
+	tds_linkedlist_iter *iter = NULL;
 	long idx = 0;
 
 	for (idx = 0; idx < 10; idx++)
@@ -26,16 +26,16 @@ void test_1(void)
 	idx = 0;
 	iter = tds_linkedlist_head(list);
 	while (iter != NULL) {
-		long *value = (long *)tds_linkedlist_node_data(iter);
-		iter = tds_linkedlist_node_next(iter);
+		long *value = (long *)tds_linkedlist_iter_data(iter);
+		iter = tds_linkedlist_iter_next(iter);
 		assert(*value == idx);
 		idx += 1;
 	}
 
 	iter = tds_linkedlist_tail(list);
 	while (iter != NULL) {
-		long *value = (long *)tds_linkedlist_node_data(iter);
-		iter = tds_linkedlist_node_prev(iter);
+		long *value = (long *)tds_linkedlist_iter_data(iter);
+		iter = tds_linkedlist_iter_prev(iter);
 		idx -= 1;
 		assert(*value == idx);
 	}
@@ -64,7 +64,7 @@ void test_2(void)
 {
 	size_t bufferlen = 100;
 	tds_linkedlist *list = tds_linkedlist_create_gen(sizeof(long), bufferlen);
-	tds_linkedlist_node *iter = NULL;
+	tds_linkedlist_iter *iter = NULL;
 	long idx = 0;
 
 	for (idx = 0; idx < bufferlen; idx++)
@@ -99,9 +99,9 @@ void test_2(void)
 	iter = tds_linkedlist_tail(list);
 	idx = 0;
 	while (iter != NULL) {
-		long *value = (long *)tds_linkedlist_node_data(iter);
+		long *value = (long *)tds_linkedlist_iter_data(iter);
 		idx += 1;
-		iter = tds_linkedlist_node_prev(iter);
+		iter = tds_linkedlist_iter_prev(iter);
 		assert(*value == idx);
 	}
 	tds_linkedlist_free(list);

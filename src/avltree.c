@@ -9,3 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct avltree {
+	/* data */
+};
+
+
+avltree *avltree_create()
+{
+	return NULL;
+}
+

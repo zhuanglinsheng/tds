@@ -12,8 +12,11 @@
 extern "C" {
 #endif
 
-#define __tds_debug
-
+/******************************************************************************
+ * Hash Table
+ *
+ *
+ *****************************************************************************/
 typedef struct tds_hashtbl  tds_hashtbl;
 
 tds_hashtbl *tds_hashtbl_create_gen(size_t keysize, size_t valuesize, size_t init_capacity);
@@ -63,6 +66,9 @@ int tds_hashtbl_rm(tds_hashtbl *tbl, const void *key);
  * 		- If the location has elements (return 1), the location is for changing existing elements
  */
 size_t __tds_hashtbl_get_loc(const tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state);
+
+/* #define __tds_debug
+ */
 
 #ifdef __tds_debug
 size_t __tds_hashtbl_get_n_conflicts(const tds_hashtbl *tbl);

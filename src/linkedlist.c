@@ -11,42 +11,40 @@
 
 #define __tds_linkedlist_buffer_limit  8
 
-struct tds_linkedlist_node
-{
+struct tds_linkedlist_node {
 	struct tds_linkedlist_node *__prev;
 	struct tds_linkedlist_node *__next;
 	void *__data;
 	/* there will be `elesize` more spaces after the `tds_linkedlist_node` for the storage of data */
 };
 
-struct tds_linkedlist
-{
+struct tds_linkedlist {
 	size_t __elesize;
 	size_t __len;
-	tds_linkedlist_node *__head;
-	tds_linkedlist_node *__tail;
+	struct tds_linkedlist_node *__head;
+	struct tds_linkedlist_node *__tail;
 
 	/* buffer stack */
 	size_t __buffer_limit;
-	tds_linkedlist_node *__buffer_head;  /* only pointer to next is valid */
+	struct tds_linkedlist_node *__buffer_head;  /* only pointer to next is valid */
 };
 
 
 /* On success, return a linked list node whose pointer to `data` is valid
  * On failure, return `NULL` pointer
  */
-static tds_linkedlist_node *__create_linkedlist_node(size_t elesize)
+static struct tds_linkedlist_node *__create_linkedlist_node(size_t elesize)
 {
 	void *_blk_space = NULL;
-	tds_linkedlist_node *node = NULL;
+	struct tds_linkedlist_node *node = NULL;
 
-	size_t basic_size = sizeof(tds_linkedlist_node);
+	size_t basic_size = sizeof(struct tds_linkedlist_node);
 
 	if (NULL == (_blk_space = malloc(basic_size + elesize))) {
 		printf("Error ... __create_linkedlist_node\n");
 		return NULL;
 	}
-	node = (tds_linkedlist_node *)_blk_space;
+	node = (struct tds_linkedlist_node *)_blk_space;
 	node->__data = (char *)_blk_space + basic_size;
 	return node;
 }
@@ -54,7 +52,7 @@ static tds_linkedlist_node *__create_linkedlist_node(size_t elesize)
 /* If there is space, then store node to buffer
  * Otherwise, free the node
  */
-static void __store_node_to_linkedlist_buffer(tds_linkedlist_node *node, tds_linkedlist *list)
+static void __store_node_to_linkedlist_buffer(struct tds_linkedlist_node *node, tds_linkedlist *list)
 {
 	if (tds_linkedlist_buffer_len(list) < list->__buffer_limit) {
 		node->__next = list->__buffer_head;  /* maintain the pointer to next, can be NULL */
@@ -68,9 +66,9 @@ static void __store_node_to_linkedlist_buffer(tds_linkedlist_node *node, tds_lin
  * 	On failure, return `NULL` pointer.
  * If there is node in buffer, pop that node from buffer stack and return that node.
  */
-static tds_linkedlist_node *__get_linkedlist_node_for_appending(tds_linkedlist *list)
+static struct tds_linkedlist_node *__get_linkedlist_node_for_appending(tds_linkedlist *list)
 {
-	tds_linkedlist_node *node = NULL;
+	struct tds_linkedlist_node *node = NULL;
 
 	assert(NULL != list);
 
@@ -113,7 +111,7 @@ void tds_linkedlist_free_buffer(tds_linkedlist *list)
 	assert(NULL != list);
 
 	while (NULL != list->__buffer_head) {
-		tds_linkedlist_node *node = list->__buffer_head;
+		struct tds_linkedlist_node *node = list->__buffer_head;
 		list->__buffer_head = node->__next;
 		free(node);  /* free the whole block */
 	}
@@ -121,14 +119,14 @@ void tds_linkedlist_free_buffer(tds_linkedlist *list)
 
 void tds_linkedlist_free(tds_linkedlist *list)
 {
-	tds_linkedlist_node *node = NULL;
+	struct tds_linkedlist_node *node = NULL;
 
 	assert(NULL != list);
 	tds_linkedlist_free_buffer(list);
 	node = list->__head;
 
 	while (NULL != node) {
-		tds_linkedlist_node *tmp = node->__next;
+		struct tds_linkedlist_node *tmp = node->__next;
 		free(node);
 		node = tmp;
 	}
@@ -144,7 +142,7 @@ size_t tds_linkedlist_len(const tds_linkedlist *list)
 size_t tds_linkedlist_buffer_len(const tds_linkedlist *list)
 {
 	size_t len = 0;
-	tds_linkedlist_node *node = NULL;
+	struct tds_linkedlist_node *node = NULL;
 
 	assert(NULL != list);
 
@@ -157,34 +155,34 @@ size_t tds_linkedlist_buffer_len(const tds_linkedlist *list)
 }
 
 
-tds_linkedlist_node *tds_linkedlist_head(const tds_linkedlist *list)
+tds_linkedlist_iter *tds_linkedlist_head(const tds_linkedlist *list)
 {
 	return list->__head;
 }
 
-tds_linkedlist_node *tds_linkedlist_tail(const tds_linkedlist *list)
+tds_linkedlist_iter *tds_linkedlist_tail(const tds_linkedlist *list)
 {
 	return list->__tail;
 }
 
-tds_linkedlist_node *tds_linkedlist_node_prev(const tds_linkedlist_node *iter)
+tds_linkedlist_iter *tds_linkedlist_iter_prev(const tds_linkedlist_iter *iter)
 {
 	return iter->__prev;
 }
 
-tds_linkedlist_node *tds_linkedlist_node_next(const tds_linkedlist_node *iter)
+tds_linkedlist_iter *tds_linkedlist_iter_next(const tds_linkedlist_iter *iter)
 {
 	return iter->__next;
 }
 
-void *tds_linkedlist_node_data(const tds_linkedlist_node *iter)
+void *tds_linkedlist_iter_data(const tds_linkedlist_iter *iter)
 {
 	return iter->__data;
 }
 
-int tds_linkedlist_insert_before(tds_linkedlist *list, tds_linkedlist_node *iter, void *data)
+int tds_linkedlist_insert_before(tds_linkedlist *list, tds_linkedlist_iter *iter, void *data)
 {
-	tds_linkedlist_node *node_new = NULL;
+	struct tds_linkedlist_node *node_new = NULL;
 
 	assert(NULL != list);
 	assert(NULL != iter);
@@ -208,9 +206,9 @@ int tds_linkedlist_insert_before(tds_linkedlist *list, tds_linkedlist_node *iter
 	return 1;
 }
 
-int tds_linkedlist_insert_after(tds_linkedlist *list, tds_linkedlist_node *iter, void *data)
+int tds_linkedlist_insert_after(tds_linkedlist *list, tds_linkedlist_iter *iter, void *data)
 {
-	tds_linkedlist_node *node_new = NULL;
+	struct tds_linkedlist_node *node_new = NULL;
 
 	assert(NULL != list);
 	assert(NULL != iter);
@@ -234,7 +232,7 @@ int tds_linkedlist_insert_after(tds_linkedlist *list, tds_linkedlist_node *iter,
 	return 1;
 }
 
-void tds_linkedlist_delete_node(tds_linkedlist *list, tds_linkedlist_node *iter)
+void tds_linkedlist_delete_node(tds_linkedlist *list, tds_linkedlist_iter *iter)
 {
 	assert(NULL != list);
 	assert(NULL != iter);
@@ -259,7 +257,7 @@ void tds_linkedlist_delete_node(tds_linkedlist *list, tds_linkedlist_node *iter)
 
 int tds_linkedlist_push_front(tds_linkedlist *list, void *data)
 {
-	tds_linkedlist_node *node = NULL;
+	struct tds_linkedlist_node *node = NULL;
 
 	assert(NULL != list);
 	assert(NULL != data);
@@ -286,7 +284,7 @@ int tds_linkedlist_push_front(tds_linkedlist *list, void *data)
 
 int tds_linkedlist_push_back(tds_linkedlist *list, void *data)
 {
-	tds_linkedlist_node *node = NULL;
+	struct tds_linkedlist_node *node = NULL;
 
 	assert(NULL != list);
 	assert(NULL != data);
@@ -312,8 +310,8 @@ int tds_linkedlist_push_back(tds_linkedlist *list, void *data)
 
 int tds_linkedlist_insert(tds_linkedlist *list, void *data, size_t n)
 {
-	tds_linkedlist_node *node = NULL;
-	tds_linkedlist_node *node_post = NULL;  /* currenty indexed by n */
+	struct tds_linkedlist_node *node = NULL;
+	struct tds_linkedlist_node *node_post = NULL;  /* currenty indexed by n */
 	size_t idx = 0;
 
 	assert(NULL != list);
@@ -361,7 +359,7 @@ int tds_linkedlist_insert(tds_linkedlist *list, void *data, size_t n)
 
 void tds_linkedlist_pop_front(tds_linkedlist *list)
 {
-	tds_linkedlist_node *node = NULL;
+	struct tds_linkedlist_node *node = NULL;
 
 	assert(NULL != list);
 	assert(list->__len > 0);
@@ -381,7 +379,7 @@ void tds_linkedlist_pop_front(tds_linkedlist *list)
 
 void tds_linkedlist_pop_back(tds_linkedlist *list)
 {
-	tds_linkedlist_node *node = NULL;
+	struct tds_linkedlist_node *node = NULL;
 
 	assert(NULL != list);
 	assert(list->__len > 0);
@@ -401,7 +399,7 @@ void tds_linkedlist_pop_back(tds_linkedlist *list)
 
 void tds_linkedlist_delete(tds_linkedlist *list, size_t n)
 {
-	tds_linkedlist_node *node = NULL;
+	struct tds_linkedlist_node *node = NULL;
 	size_t idx = 0;
 
 	assert(NULL != list);

@@ -111,7 +111,7 @@ void tds_arraylist_force_pushback(tds_arraylist *list,const void *ele)
 	}
 }
 
-void tds_arraylist_force_eat_vec(tds_arraylist *list, tds_arraylist *v2)
+void tds_arraylist_force_eat_list(tds_arraylist *list, tds_arraylist *v2)
 {
 	size_t idx = 0;
 

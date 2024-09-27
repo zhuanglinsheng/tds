@@ -12,6 +12,11 @@
 extern "C" {
 #endif
 
+/******************************************************************************
+ * Array List based Stack
+ *
+ *
+ *****************************************************************************/
 typedef tds_arraylist  tds_stack_arr;
 
 /* On failure, exit the program
