@@ -8,7 +8,7 @@ This is a general-purpose data structure library implemented in the pure ISO C90
    - [x] [array.h](./include/tds/array.h)
    - [x] [arraylist.h](./include/tds/arraylist.h)
    - [x] [linkedlist.h](./include/tds/linkedlist.h)
-   - [ ] [deque.h](./include/tds/deque.h)
+   - [x] [deque.h](./include/tds/deque.h)
    - [x] [hashtbl.h](./include/tds/hashtbl.h)
    - [x] [stack_arr.h](./include/tds/stack_arr.h)
    - [ ] [stack_deq.h](./include/tds/stack_deq.h)
