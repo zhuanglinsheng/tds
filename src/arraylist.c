@@ -43,15 +43,20 @@ tds_arraylist *tds_arraylist_create(size_t elesize)
 	return tds_arraylist_create_gen(elesize, __tds_arraylist_init_len);
 }
 
-tds_arraylist *tds_arraylist_force_create(size_t elesize)
+tds_arraylist *tds_arraylist_force_create_gen(size_t elesize, size_t capacity)
 {
-	tds_arraylist* re = tds_arraylist_create(elesize);
+	tds_arraylist* re = tds_arraylist_create_gen(elesize, capacity);
 
 	if (NULL == re) {
-		printf("Error .. tds_arraylist_force_create\n");
+		printf("Error .. tds_arraylist_force_create_gen\n");
 		exit(-1);
 	}
 	return re;
+}
+
+tds_arraylist *tds_arraylist_force_create(size_t elesize)
+{
+	return tds_arraylist_force_create_gen(elesize, __tds_arraylist_init_len);
 }
 
 void tds_arraylist_free(tds_arraylist *list)

@@ -9,8 +9,8 @@
  * 	- tds_linkedlist_push_back
  *
  * testing iteration
- * 	- tds_linkedlist_head
- * 	- tds_linkedlist_tail
+ * 	- tds_linkedlist_iter_head
+ * 	- tds_linkedlist_iter_tail
  * 	- tds_linkedlist_iter_next
  * 	- tds_linkedlist_iter_prev
  */
@@ -24,7 +24,7 @@ void test_1(void)
 		tds_linkedlist_push_back(list, &idx);
 
 	idx = 0;
-	iter = tds_linkedlist_head(list);
+	iter = tds_linkedlist_iter_head(list);
 	while (iter != NULL) {
 		long *value = (long *)tds_linkedlist_iter_data(iter);
 		iter = tds_linkedlist_iter_next(iter);
@@ -32,7 +32,7 @@ void test_1(void)
 		idx += 1;
 	}
 
-	iter = tds_linkedlist_tail(list);
+	iter = tds_linkedlist_iter_tail(list);
 	while (iter != NULL) {
 		long *value = (long *)tds_linkedlist_iter_data(iter);
 		iter = tds_linkedlist_iter_prev(iter);
@@ -91,12 +91,12 @@ void test_2(void)
 	assert(2 == tds_linkedlist_len(list));
 
 	idx = 0;
-	tds_linkedlist_insert_after(list, tds_linkedlist_tail(list), &idx);   /* 3,2,0 */
+	tds_linkedlist_insert_after(list, tds_linkedlist_iter_tail(list), &idx);   /* 3,2,0 */
 	idx = 1;
-	tds_linkedlist_insert_before(list, tds_linkedlist_tail(list), &idx);  /* 3,2,1,0 */
-	tds_linkedlist_delete_node(list, tds_linkedlist_tail(list));          /* 3,2,1 */
+	tds_linkedlist_insert_before(list, tds_linkedlist_iter_tail(list), &idx);  /* 3,2,1,0 */
+	tds_linkedlist_delete_node(list, tds_linkedlist_iter_tail(list));          /* 3,2,1 */
 
-	iter = tds_linkedlist_tail(list);
+	iter = tds_linkedlist_iter_tail(list);
 	idx = 0;
 	while (iter != NULL) {
 		long *value = (long *)tds_linkedlist_iter_data(iter);

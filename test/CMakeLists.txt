@@ -41,3 +41,10 @@ add_test(
 	NAME test_hashtbl
 	COMMAND test_hashtbl
 )
+
+add_executable(test_avltree test_avltree.c)
+target_link_libraries(test_avltree tds)
+add_test(
+	NAME test_avltree
+	COMMAND test_avltree
+)

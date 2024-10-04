@@ -14,9 +14,11 @@
 struct tds_linkedlist_node {
 	struct tds_linkedlist_node *__prev;
 	struct tds_linkedlist_node *__next;
-	void *__data;
-	/* there will be `elesize` more spaces after the `tds_linkedlist_node` for the storage of data */
+	/* there will be `elesize` more spaces after the
+	 * `tds_linkedlist_node` for the storage of data */
 };
+
+#define __linkedlist_node_basic_size  sizeof(struct tds_linkedlist_node)
 
 struct tds_linkedlist {
 	size_t __elesize;
@@ -35,18 +37,18 @@ struct tds_linkedlist {
  */
 static struct tds_linkedlist_node *__create_linkedlist_node(size_t elesize)
 {
-	void *_blk_space = NULL;
 	struct tds_linkedlist_node *node = NULL;
 
-	size_t basic_size = sizeof(struct tds_linkedlist_node);
-
-	if (NULL == (_blk_space = malloc(basic_size + elesize))) {
+	if (NULL == (node = malloc(elesize + __linkedlist_node_basic_size))) {
 		printf("Error ... __create_linkedlist_node\n");
 		return NULL;
 	}
-	node = (struct tds_linkedlist_node *)_blk_space;
-	node->__data = (char *)_blk_space + basic_size;
 	return node;
+}
+
+static void *__linkedlist_node_data(const struct tds_linkedlist_node *node)
+{
+	return ((char *) node) + __linkedlist_node_basic_size;
 }
 
 /* If there is space, then store node to buffer
@@ -155,12 +157,12 @@ size_t tds_linkedlist_buffer_len(const tds_linkedlist *list)
 }
 
 
-tds_linkedlist_iter *tds_linkedlist_head(const tds_linkedlist *list)
+tds_linkedlist_iter *tds_linkedlist_iter_head(const tds_linkedlist *list)
 {
 	return list->__head;
 }
 
-tds_linkedlist_iter *tds_linkedlist_tail(const tds_linkedlist *list)
+tds_linkedlist_iter *tds_linkedlist_iter_tail(const tds_linkedlist *list)
 {
 	return list->__tail;
 }
@@ -177,7 +179,7 @@ tds_linkedlist_iter *tds_linkedlist_iter_next(const tds_linkedlist_iter *iter)
 
 void *tds_linkedlist_iter_data(const tds_linkedlist_iter *iter)
 {
-	return iter->__data;
+	return __linkedlist_node_data(iter);
 }
 
 int tds_linkedlist_insert_before(tds_linkedlist *list, tds_linkedlist_iter *iter, void *data)
@@ -194,7 +196,7 @@ int tds_linkedlist_insert_before(tds_linkedlist *list, tds_linkedlist_iter *iter
 	}
 	node_new->__prev = iter->__prev;
 	node_new->__next = iter;
-	memcpy(node_new->__data, data, list->__elesize);
+	memcpy(__linkedlist_node_data(node_new), data, list->__elesize);
 
 	if (NULL != iter->__prev)
 		iter->__prev->__next = node_new;
@@ -220,7 +222,7 @@ int tds_linkedlist_insert_after(tds_linkedlist *list, tds_linkedlist_iter *iter,
 	}
 	node_new->__prev = iter;
 	node_new->__next = iter->__next;
-	memcpy(node_new->__data, data, list->__elesize);
+	memcpy(__linkedlist_node_data(node_new), data, list->__elesize);
 
 	if (NULL != iter->__next)
 		iter->__next->__prev = node_new;
@@ -266,7 +268,7 @@ int tds_linkedlist_push_front(tds_linkedlist *list, void *data)
 		printf("Error ... tds_linkedlist_push_front\n");
 		return 0;  /* failure */
 	}
-	memcpy(node->__data, data, list->__elesize);  /* node->__data is a valid pointer to a free space */
+	memcpy(__linkedlist_node_data(node), data, list->__elesize);
 	node->__prev = NULL;
 	node->__next = list->__head;
 
@@ -293,7 +295,7 @@ int tds_linkedlist_push_back(tds_linkedlist *list, void *data)
 		printf("Error ... tds_linkedlist_push_back\n");
 		return 0;  /* failure */
 	}
-	memcpy(node->__data, data, list->__elesize);  /* node->__data is a valid pointer to a free space */
+	memcpy(__linkedlist_node_data(node), data, list->__elesize);
 	node->__next = NULL;
 	node->__prev = list->__tail;
 	if (NULL != node->__prev)
@@ -334,7 +336,7 @@ int tds_linkedlist_insert(tds_linkedlist *list, void *data, size_t n)
 		printf("Error ... tds_linkedlist_insert\n");
 		return 0;  /* failure */
 	}
-	memcpy(node->__data, data, list->__elesize);  /* node->__data is a valid pointer to a free space */
+	memcpy(__linkedlist_node_data(node), data, list->__elesize);
 	node->__prev = node_post->__prev;
 	node->__next = node_post;
 

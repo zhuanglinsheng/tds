@@ -31,8 +31,8 @@ void tds_linkedlist_free(tds_linkedlist *list);
 size_t tds_linkedlist_len(const tds_linkedlist *list);
 size_t tds_linkedlist_buffer_len(const tds_linkedlist *list);
 
-tds_linkedlist_iter *tds_linkedlist_head(const tds_linkedlist *list);
-tds_linkedlist_iter *tds_linkedlist_tail(const tds_linkedlist *list);
+tds_linkedlist_iter *tds_linkedlist_iter_head(const tds_linkedlist *list);
+tds_linkedlist_iter *tds_linkedlist_iter_tail(const tds_linkedlist *list);
 tds_linkedlist_iter *tds_linkedlist_iter_prev(const tds_linkedlist_iter *iter);
 tds_linkedlist_iter *tds_linkedlist_iter_next(const tds_linkedlist_iter *iter);
 

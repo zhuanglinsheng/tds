@@ -21,7 +21,7 @@ typedef struct tds_deque  tds_deque;
 tds_deque *tds_deque_create_gen(size_t elesize, size_t blk_capacity, size_t buffer_lim);
 tds_deque *tds_deque_create(size_t elesize);
 tds_deque *tds_deque_force_create(size_t elesize);
-tds_deque *tds_deque_free(tds_deque *q);
+void tds_deque_free(tds_deque *q);
 
 size_t tds_deque_len(const tds_deque * q);
 size_t tds_deque_nblks(const tds_deque * q);

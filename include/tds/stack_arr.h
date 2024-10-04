@@ -23,6 +23,10 @@ typedef tds_arraylist  tds_stack_arr;
  */
 tds_stack_arr *tds_stack_arr_force_create(size_t elesize);
 
+/* On failure, exit the program
+ */
+tds_stack_arr *tds_stack_arr_force_create_gen(size_t elesize, size_t capacity);
+
 /* On failure, return `NULL`
  */
 tds_stack_arr *tds_stack_arr_create(size_t elesize);

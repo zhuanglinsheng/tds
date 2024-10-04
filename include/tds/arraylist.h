@@ -22,6 +22,10 @@ typedef struct tds_arraylist  tds_arraylist;
  */
 tds_arraylist *tds_arraylist_force_create(size_t elesize);
 
+/* On failure, the program is stopped
+ */
+tds_arraylist *tds_arraylist_force_create_gen(size_t elesize, size_t capacity);
+
 /* On failure, return `NULL`
  */
 tds_arraylist *tds_arraylist_create(size_t elesize);
