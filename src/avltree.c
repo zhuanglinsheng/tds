@@ -491,7 +491,7 @@ avltree_iter *__avltree_iter_rightchild(const avltree_iter *iter)
 	return iter->__child_r;
 }
 
-avltree_iter *avltree_get_iter_g(const avltree *tree, void *key, __fn_cmp _f, int *is_left)
+avltree_iter *avltree_get_iter_g(const avltree *tree, void *key, __fn_cmp_t _f, int *is_left)
 {
 	struct avltree_node *node = NULL;
 	assert(NULL != tree);
@@ -516,13 +516,13 @@ avltree_iter *avltree_get_iter_g(const avltree *tree, void *key, __fn_cmp _f, in
 	return NULL;  /* failure */
 }
 
-avltree_iter *avltree_get_iter(const avltree *tree, void *key, __fn_cmp _f)
+avltree_iter *avltree_get_iter(const avltree *tree, void *key, __fn_cmp_t _f)
 {
 	int left = 0;
 	return avltree_get_iter_g(tree, key, _f, &left);
 }
 
-void *avltree_get(const avltree *tree, void *key, __fn_cmp _f)
+void *avltree_get(const avltree *tree, void *key, __fn_cmp_t _f)
 {
 	struct avltree_node *the_node = NULL;
 
@@ -624,7 +624,7 @@ struct avltree_node *__avltree_rebalance(struct avltree_node *node)
 	return node;
 }
 
-int avltree_insert(avltree *tree, void *ele, __fn_cmp _f)
+int avltree_insert(avltree *tree, void *ele, __fn_cmp_t _f)
 {
 	struct avltree_node *node = NULL;
 	struct avltree_node *node_father = NULL;
@@ -672,7 +672,7 @@ int avltree_insert(avltree *tree, void *ele, __fn_cmp _f)
 
 /* The deleted node is not released but forced to be buffered
  */
-int avltree_delete_g(avltree *tree, void *key, __fn_cmp _f, int force_buffer)
+int avltree_delete_g(avltree *tree, void *key, __fn_cmp_t _f, int force_buffer)
 {
 	struct avltree_node *node = NULL;
 	struct avltree_node *node_father = NULL;
@@ -702,7 +702,7 @@ int avltree_delete_g(avltree *tree, void *key, __fn_cmp _f, int force_buffer)
 	return 1;
 }
 
-int avltree_delete(avltree *tree, void *key, __fn_cmp _f)
+int avltree_delete(avltree *tree, void *key, __fn_cmp_t _f)
 {
 	return avltree_delete_g(tree, key, _f, 0);
 }

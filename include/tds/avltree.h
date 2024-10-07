@@ -27,7 +27,7 @@ typedef struct avltree_node  avltree_iter;
  * 	- return  0 if a = b
  * 	- return -1 if a < b
  */
-typedef int __fn_cmp(void *_a, void *_b);
+typedef int __fn_cmp_t(void *_a, void *_b);
 
 avltree *avltree_create(size_t elesize);
 avltree *avltree_create_g(size_t elesize, size_t bufferlim);
@@ -50,12 +50,12 @@ avltree_iter *avltree_iter_prev(avltree_iter *iter);
 avltree_iter *__avltree_iter_leftchild(const avltree_iter *iter);
 avltree_iter *__avltree_iter_rightchild(const avltree_iter *iter);
 
-int avltree_insert(avltree *tree, void *ele, __fn_cmp _f);
-int avltree_delete(avltree *tree, void *key, __fn_cmp _f);
+int avltree_insert(avltree *tree, void *ele, __fn_cmp_t _f);
+int avltree_delete(avltree *tree, void *key, __fn_cmp_t _f);
 
-void *avltree_get(const avltree *tree, void *key, __fn_cmp _f);
-avltree_iter *avltree_get_iter(const avltree *tree, void *key, __fn_cmp _f);
-avltree_iter *avltree_get_iter_g(const avltree *tree, void *key, __fn_cmp _f, int *is_left);
+void *avltree_get(const avltree *tree, void *key, __fn_cmp_t _f);
+avltree_iter *avltree_get_iter(const avltree *tree, void *key, __fn_cmp_t _f);
+avltree_iter *avltree_get_iter_g(const avltree *tree, void *key, __fn_cmp_t _f, int *is_left);
 
 #ifdef __cplusplus
 }
