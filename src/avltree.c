@@ -491,7 +491,8 @@ avltree_iter *__avltree_iter_rightchild(const avltree_iter *iter)
 	return iter->__child_r;
 }
 
-avltree_iter *avltree_get_iter_g(const avltree *tree, void *key, __fn_cmp_t _f, int *is_left)
+avltree_iter *__avltree_get_iter_g(
+		const avltree *tree, void *key, __fn_cmp_t _f, int *is_left)
 {
 	struct avltree_node *node = NULL;
 	assert(NULL != tree);
@@ -519,7 +520,7 @@ avltree_iter *avltree_get_iter_g(const avltree *tree, void *key, __fn_cmp_t _f, 
 avltree_iter *avltree_get_iter(const avltree *tree, void *key, __fn_cmp_t _f)
 {
 	int left = 0;
-	return avltree_get_iter_g(tree, key, _f, &left);
+	return __avltree_get_iter_g(tree, key, _f, &left);
 }
 
 void *avltree_get(const avltree *tree, void *key, __fn_cmp_t _f)
@@ -682,7 +683,7 @@ int avltree_delete_g(avltree *tree, void *key, __fn_cmp_t _f, int force_buffer)
 	assert(NULL != key);
 	assert(NULL != _f);
 
-	if (NULL == (node = avltree_get_iter_g(tree, key, _f, &left))) {
+	if (NULL == (node = __avltree_get_iter_g(tree, key, _f, &left))) {
 		printf("Error ... avltree_delete\n");
 		return 0;  /* failure */
 	}

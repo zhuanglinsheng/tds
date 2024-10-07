@@ -55,7 +55,6 @@ int avltree_delete(avltree *tree, void *key, __fn_cmp_t _f);
 
 void *avltree_get(const avltree *tree, void *key, __fn_cmp_t _f);
 avltree_iter *avltree_get_iter(const avltree *tree, void *key, __fn_cmp_t _f);
-avltree_iter *avltree_get_iter_g(const avltree *tree, void *key, __fn_cmp_t _f, int *is_left);
 
 #ifdef __cplusplus
 }
