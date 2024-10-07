@@ -16,6 +16,7 @@ extern "C" {
  *
  *
  *****************************************************************************/
+
 typedef struct tds_linkedlist  tds_linkedlist;
 
 /* Linked list iterator
@@ -24,6 +25,11 @@ typedef struct tds_linkedlist_node  tds_linkedlist_iter;
 
 tds_linkedlist *tds_linkedlist_create_gen(size_t elesize, size_t buffer_limit);
 tds_linkedlist *tds_linkedlist_create(size_t elesize);
+
+/* Pre-allocate the nodes that you need.
+ * These pre-allocated noded will be stored in buffer
+ */
+void tds_linkedlist_prealloc(tds_linkedlist *list, size_t n);
 
 void tds_linkedlist_free_buffer(tds_linkedlist *list);
 void tds_linkedlist_free(tds_linkedlist *list);

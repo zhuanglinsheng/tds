@@ -17,6 +17,7 @@ extern "C" {
  *
  *
  *****************************************************************************/
+
 typedef struct tds_hashtbl  tds_hashtbl;
 
 tds_hashtbl *tds_hashtbl_create_gen(size_t keysize, size_t valuesize, size_t init_capacity);

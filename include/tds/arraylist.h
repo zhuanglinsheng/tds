@@ -16,6 +16,7 @@ extern "C" {
  *
  *
  *****************************************************************************/
+
 typedef struct tds_arraylist  tds_arraylist;
 
 /* On failure, the program is stopped

@@ -16,6 +16,7 @@ extern "C" {
  *
  *
  *****************************************************************************/
+
 typedef struct tds_bitarray  tds_bitarray;
 
 /* On failure, return NULL pointer

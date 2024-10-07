@@ -3,8 +3,23 @@
 #include <assert.h>
 #include <stdio.h>
 
+void test_0(void)
+{
+	tds_linkedlist *list = tds_linkedlist_create(sizeof(long));
+	size_t num_tests = 1000;
+
+	/* pre-allocate all the nodes */
+	tds_linkedlist_prealloc(list, num_tests);
+
+	assert(num_tests == tds_linkedlist_buffer_len(list));
+	tds_linkedlist_free_buffer(list);
+	assert(0 == tds_linkedlist_buffer_len(list));
+	tds_linkedlist_free(list);
+}
+
 /* testing basic
  * 	- tds_linkedlist_create
+ * 	- tds_linkedlist_prealloc
  * 	- tds_linkedlist_free
  * 	- tds_linkedlist_push_back
  *
@@ -17,10 +32,11 @@
 void test_1(void)
 {
 	tds_linkedlist *list = tds_linkedlist_create(sizeof(long));
+	size_t num_tests = 10;
 	tds_linkedlist_iter *iter = NULL;
 	long idx = 0;
 
-	for (idx = 0; idx < 10; idx++)
+	for (idx = 0; idx < num_tests; idx++)
 		tds_linkedlist_push_back(list, &idx);
 
 	idx = 0;
@@ -109,6 +125,7 @@ void test_2(void)
 
 int main(void)
 {
+	test_0();
 	test_1();
 	test_2();
 	return 0;

@@ -16,6 +16,7 @@ extern "C" {
  *
  *
  *****************************************************************************/
+
 typedef struct tds_queue_deq  tds_queue_deq;
 
 tds_queue_deq *tds_queue_deq_create_gen(size_t elesize, size_t capacity);

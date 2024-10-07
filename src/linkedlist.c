@@ -9,7 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define __tds_linkedlist_buffer_limit  8
+#define __linkedlist_buffer_limit  ((size_t)-1)
+#define __linkedlist_node_basic_size  sizeof(struct tds_linkedlist_node)
 
 struct tds_linkedlist_node {
 	struct tds_linkedlist_node *__prev;
@@ -17,8 +18,6 @@ struct tds_linkedlist_node {
 	/* there will be `elesize` more spaces after the
 	 * `tds_linkedlist_node` for the storage of data */
 };
-
-#define __linkedlist_node_basic_size  sizeof(struct tds_linkedlist_node)
 
 struct tds_linkedlist {
 	size_t __elesize;
@@ -35,7 +34,7 @@ struct tds_linkedlist {
 /* On success, return a linked list node whose pointer to `data` is valid
  * On failure, return `NULL` pointer
  */
-static struct tds_linkedlist_node *__create_linkedlist_node(size_t elesize)
+struct tds_linkedlist_node *__create_linkedlist_node(size_t elesize)
 {
 	struct tds_linkedlist_node *node = NULL;
 
@@ -46,15 +45,17 @@ static struct tds_linkedlist_node *__create_linkedlist_node(size_t elesize)
 	return node;
 }
 
-static void *__linkedlist_node_data(const struct tds_linkedlist_node *node)
+void *__linkedlist_node_data(const struct tds_linkedlist_node *node)
 {
 	return ((char *) node) + __linkedlist_node_basic_size;
 }
 
+
+
 /* If there is space, then store node to buffer
  * Otherwise, free the node
  */
-static void __store_node_to_linkedlist_buffer(struct tds_linkedlist_node *node, tds_linkedlist *list)
+void __store_node_to_linkedlist_buffer(struct tds_linkedlist_node *node, tds_linkedlist *list)
 {
 	if (tds_linkedlist_buffer_len(list) < list->__buffer_limit) {
 		node->__next = list->__buffer_head;  /* maintain the pointer to next, can be NULL */
@@ -68,7 +69,7 @@ static void __store_node_to_linkedlist_buffer(struct tds_linkedlist_node *node, 
  * 	On failure, return `NULL` pointer.
  * If there is node in buffer, pop that node from buffer stack and return that node.
  */
-static struct tds_linkedlist_node *__get_linkedlist_node_for_appending(tds_linkedlist *list)
+struct tds_linkedlist_node *__get_linkedlist_node_for_appending(tds_linkedlist *list)
 {
 	struct tds_linkedlist_node *node = NULL;
 
@@ -83,6 +84,7 @@ static struct tds_linkedlist_node *__get_linkedlist_node_for_appending(tds_linke
 	}
 	return node;
 }
+
 
 tds_linkedlist *tds_linkedlist_create_gen(size_t elesize, size_t buffer_limit)
 {
@@ -105,7 +107,23 @@ tds_linkedlist *tds_linkedlist_create_gen(size_t elesize, size_t buffer_limit)
 
 tds_linkedlist *tds_linkedlist_create(size_t elesize)
 {
-	return tds_linkedlist_create_gen(elesize, __tds_linkedlist_buffer_limit);
+	return tds_linkedlist_create_gen(elesize, __linkedlist_buffer_limit);
+}
+
+void tds_linkedlist_prealloc(tds_linkedlist *list, size_t n)
+{
+	size_t idx = 0;
+	assert(n <= list->__buffer_limit);
+
+	for (idx = 0; idx < n; idx++) {
+		struct tds_linkedlist_node *node = __create_linkedlist_node(list->__elesize);
+
+		if (node == NULL) {
+			printf("Error ... tds_linkedlist_prealloc\n");
+			break;
+		}
+		__store_node_to_linkedlist_buffer(node, list);
+	}
 }
 
 void tds_linkedlist_free_buffer(tds_linkedlist *list)

@@ -16,6 +16,7 @@ extern "C" {
  *
  *
  *****************************************************************************/
+
 typedef struct tds_array  tds_array;
 
 /* On failure, return NULL pointer

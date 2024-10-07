@@ -24,4 +24,5 @@ void test_arraylist(void)
 int main(void)
 {
 	test_arraylist();
+	return 0;
 }
