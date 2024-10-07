@@ -47,6 +47,8 @@ avltree_iter *avltree_iter_front(const avltree *tree);
 avltree_iter *avltree_iter_back(const avltree *tree);
 avltree_iter *avltree_iter_next(avltree_iter *iter);
 avltree_iter *avltree_iter_prev(avltree_iter *iter);
+avltree_iter *__avltree_iter_leftchild(const avltree_iter *iter);
+avltree_iter *__avltree_iter_rightchild(const avltree_iter *iter);
 
 int avltree_insert(avltree *tree, void *ele, __fn_cmp _f);
 

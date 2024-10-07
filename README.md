@@ -15,7 +15,7 @@ This is a general-purpose data structure library implemented in the pure ISO C90
    - [ ] [queue_deq.h](./include/tds/queue_deq.h)
    - [ ] [queue_lst.h](./include/tds/queue_lst.h)
    - [ ] [stack_lst.h](./include/tds/stack_lst.h)
-   - [ ] [avltree.h](./include/tds/avltree.h)
+   - [x] [avltree.h](./include/tds/avltree.h)
    - [ ] [rbtree.h](./include/tds/rbtree.h)
    - [ ] ...
 

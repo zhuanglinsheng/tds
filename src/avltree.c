@@ -126,7 +126,7 @@ int __node_depth(const struct avltree_node *node)
  * rotation (re-balancing) operations
  *****************************************************************************/
 
-struct avltree_node * __buffer_pop(avltree *tree)
+struct avltree_node *__buffer_pop(avltree *tree)
 {
 	struct avltree_node *buffer_head = NULL;
 	assert(NULL != tree);
@@ -172,7 +172,7 @@ int __buffer_try_append(avltree *tree, struct avltree_node *node, int force_buff
  * Warning: we assume that `node` is in `tree`
  * Don't use this function any elsewhere!!!
  */
-void __bintree_rm_node(avltree *tree, struct avltree_node *node, int force_buffer)
+struct avltree_node *__bintree_rm_node(avltree *tree, struct avltree_node *node, int force_buffer)
 {
 	struct avltree_node *c_l = NULL;
 	struct avltree_node *c_r = NULL;
@@ -224,13 +224,13 @@ void __bintree_rm_node(avltree *tree, struct avltree_node *node, int force_buffe
 	} else {
 		int select_prev = __node_depth(prev) > __node_depth(next);
 		struct avltree_node *selected = select_prev ? prev : next;
-		__bintree_rm_node(tree, selected, 1);
+		father = __bintree_rm_node(tree, selected, 1);
 		/* NOTE: recursion
 		 * 	The `selected` is NOT being freed since it is buffered
 		 * 	Hence, its data is still reachable
 		 */
 		memcpy(__node_data(node),__node_data(selected), tree->__elesize);
-		return;
+		return father;
 	}
 	/* Adjust the tree statistics
 	 */
@@ -241,6 +241,7 @@ void __bintree_rm_node(avltree *tree, struct avltree_node *node, int force_buffe
 	if (0 == __buffer_try_append(tree, node, force_buffer)) {
 		__node_free(node);
 	}
+	return father;
 }
 
 /* Add a node to the binary tree as a child of `father`
@@ -478,6 +479,18 @@ avltree_iter *avltree_iter_prev(avltree_iter *iter)
 	return NULL;  /* failure */
 }
 
+avltree_iter *__avltree_iter_leftchild(const avltree_iter *iter)
+{
+	assert(NULL != iter);
+	return iter->__child_l;
+}
+
+avltree_iter *__avltree_iter_rightchild(const avltree_iter *iter)
+{
+	assert(NULL != iter);
+	return iter->__child_r;
+}
+
 avltree_iter *avltree_get_iter_g(const avltree *tree, void *key, __fn_cmp _f, int *is_left)
 {
 	struct avltree_node *node = NULL;
@@ -550,10 +563,6 @@ struct avltree_node *__avltree_rotation_r(struct avltree_node *node)
 	if (NULL != c_lr)
 		c_lr->__father = node;
 	__node_update_height_upwardly(node);
-	/* If the height of `node` is unchanged, this function stop checking
-	 * the height of `c_r`, since it assumes the upper nodes of `node`
-	 * are all unchanged. Hence, we need the following:  */
-	__node_update_height_upwardly(c_l);
 	return c_l;
 }
 
@@ -588,10 +597,6 @@ struct avltree_node *__avltree_rotation_l(struct avltree_node *node)
 	if (NULL != c_rl)
 		c_rl->__father = node;
 	__node_update_height_upwardly(node);
-	/* If the height of `node` is unchanged, this function stop checking
-	 * the height of `c_r`, since it assumes the upper nodes of `node`
-	 * are all unchanged. Hence, we need the following:  */
-	__node_update_height_upwardly(c_r);
 	return c_r;
 }
 
@@ -650,16 +655,17 @@ int avltree_insert(avltree *tree, void *ele, __fn_cmp _f)
 	memcpy(__node_data(node), ele, tree->__elesize);
 	/*
 	 * Re-balancing
+	 * `node_father` is balancing, hence we start searching from its father
 	 */
-	while (NULL != node_father) {
-		struct avltree_node *tmp_root = __avltree_rebalance(node_father);
-		if (node_father == tmp_root)
-			node_father = node_father->__father;
-		else {
-			if (node_father == tree->__root_node)
-				tree->__root_node = tmp_root;
+	while (NULL != node_father && NULL != node_father->__father) {
+		struct avltree_node *node_grandpa = node_father->__father;
+		struct avltree_node *tmprt = __avltree_rebalance(node_grandpa);
+		if (node_grandpa != tmprt) {  /* rotated */
+			if (node_grandpa == tree->__root_node)
+				tree->__root_node = tmprt;
 			break;
-		}
+		} else                                 /* unrotated */
+			node_father = node_father->__father;
 	}
 	return 1;
 }
@@ -669,6 +675,7 @@ int avltree_insert(avltree *tree, void *ele, __fn_cmp _f)
 int avltree_delete_g(avltree *tree, void *key, __fn_cmp _f, int force_buffer)
 {
 	struct avltree_node *node = NULL;
+	struct avltree_node *node_father = NULL;
 	int left = 0;
 
 	assert(NULL != tree);
@@ -679,14 +686,18 @@ int avltree_delete_g(avltree *tree, void *key, __fn_cmp _f, int force_buffer)
 		printf("Error ... avltree_delete\n");
 		return 0;  /* failure */
 	}
-	__bintree_rm_node(tree, node, force_buffer);
+	node_father = __bintree_rm_node(tree, node, force_buffer);
 	/*
 	 * Re-balancing
-	 *
+	 * We start searching from `node_father`, the father of deleted node
 	 */
-	while (NULL != node->__father) {
-		/* ... */
-		node = node->__father;
+	while (NULL != node_father) {
+		struct avltree_node *tmprt = __avltree_rebalance(node_father);
+		if (node_father != tmprt) {  /* rotated */
+			if (node_father == tree->__root_node)
+				tree->__root_node = tmprt;
+		} else                       /* unrotated */
+			node_father = node_father->__father;
 	}
 	return 1;
 }
