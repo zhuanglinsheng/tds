@@ -20,7 +20,6 @@ struct avltree_node {
 	struct avltree_node *__child_l;
 	struct avltree_node *__child_r;
 	int __height;  /* `height` refers to the number of sub-tree layers */
-	int __depth;   /* `depth` refers to the distance to the root of tree */
 	/* more `elesize` spaces for data storage */
 };
 
@@ -61,7 +60,6 @@ struct avltree_node *__node_create(size_t elesize)
 	node->__child_l = NULL;
 	node->__child_r = NULL;
 	node->__height = 1;
-	node->__depth = 0;
 	return node;
 }
 
@@ -76,6 +74,8 @@ void *__node_data(const struct avltree_node *node)
 	return ((char *) node) + __avltree_node_basic_size;
 }
 
+/* Defined as "height of right" - "height of left"
+ */
 int __node_balace_factor(const struct avltree_node *node)
 {
 	int depth_l = 0;
@@ -86,11 +86,10 @@ int __node_balace_factor(const struct avltree_node *node)
 		depth_l = node->__child_l->__height;
 	if (NULL != node->__child_r)
 		depth_r = node->__child_r->__height;
-	return depth_l - depth_r;
+	return depth_r - depth_l;
 }
 
-/* Local operation of binary tree:
- * Update the height of `node` and all upper nodes
+/* Update the height of `node`, and all upper nodes
  */
 void __node_update_height_upwardly(struct avltree_node *node)
 {
@@ -103,40 +102,22 @@ void __node_update_height_upwardly(struct avltree_node *node)
 	if (NULL != node->__child_r)
 		h_r = node->__child_r->__height;
 	node->__height = 1 + __avltree_MAX(h_l, h_r);
+
 	if (NULL != node->__father)
 		__node_update_height_upwardly(node->__father);
 }
 
-/* Local operation of binary tree:
- * Update the depth of `node` and all children
- */
-void __node_update_depth_downwardly(struct avltree_node *node)
+int __node_depth(const struct avltree_node *node)
 {
 	int depth = 0;
-	struct avltree_node *the_node = node;
 	assert(NULL != node);
 
-	/* calculate depth */
-	while (NULL != the_node->__father) {
+	if (NULL != node->__father) {
 		depth++;
-		the_node = the_node->__father;
+		node = node->__father;
 	}
-	node->__depth = depth;
-
-	/* update left child */
-	the_node = node;
-	while (NULL != the_node->__child_l) {
-		the_node->__child_l->__depth = the_node->__depth + 1;
-		the_node = the_node->__child_l;
-	}
-	/* update right child */
-	the_node = node;
-	while (NULL != the_node->__child_r) {
-			the_node->__child_r->__depth = the_node->__depth + 1;
-			the_node = the_node->__child_r;
-	}
+	return depth;
 }
-
 
 /******************************************************************************
  * Part 2: Binary tree related operations with buffer
@@ -230,7 +211,6 @@ void __bintree_rm_node(avltree *tree, struct avltree_node *node, int force_buffe
 		} else  /* the node is the root with a single left child */
 			tree->__root_node = c_l;
 		c_l->__father = father;
-		__node_update_depth_downwardly(c_l);
 	} else if (NULL == c_l && NULL != c_r) {
 		if (NULL != father) {
 			if (left)
@@ -241,9 +221,8 @@ void __bintree_rm_node(avltree *tree, struct avltree_node *node, int force_buffe
 		} else  /* the node is the root with a single right child */
 			tree->__root_node = c_r;
 		c_r->__father = father;
-		__node_update_depth_downwardly(c_r);
 	} else {
-		int select_prev = prev->__depth > next->__depth;
+		int select_prev = __node_depth(prev) > __node_depth(next);
 		struct avltree_node *selected = select_prev ? prev : next;
 		__bintree_rm_node(tree, selected, 1);
 		/* NOTE: recursion
@@ -281,7 +260,6 @@ struct avltree_node *__bintree_add_node_to(avltree *tree, struct avltree_node *f
 	if (NULL == the_node)
 		return NULL;
 	the_node->__father = father;
-	__node_update_depth_downwardly(the_node);
 	/* child_l, child_r, height are unchanged */
 
 	if (NULL != father) {
@@ -541,6 +519,106 @@ void *avltree_get(const avltree *tree, void *key, __fn_cmp _f)
 		return __node_data(the_node);
 }
 
+/* Right rotation: Assumption: `node.child_l != NULL`
+ *          |               |
+ *         node            c_l
+ *         / \             / \
+ *       c_l  ..  =>      .  node
+ *       / \                  / \
+ *     .   c_lr            c_lr  ..
+ */
+struct avltree_node *__avltree_rotation_r(struct avltree_node *node)
+{
+	struct avltree_node *c_l = NULL;
+	struct avltree_node *c_lr = NULL;
+	assert(NULL != node);
+	assert(NULL != node->__child_l);
+	c_l = node->__child_l;
+	c_lr = c_l->__child_r;  /* could be `NULL` */
+
+	if (NULL != node->__father) {
+		int left = (node == node->__father->__child_l);
+		if (left)
+			node->__father->__child_l = c_l;
+		else
+			node->__father->__child_r = c_l;
+	}
+	c_l->__father = node->__father;
+	c_l->__child_r = node;
+	node->__father = c_l;
+	node->__child_l = c_lr;
+	if (NULL != c_lr)
+		c_lr->__father = node;
+	__node_update_height_upwardly(node);
+	/* If the height of `node` is unchanged, this function stop checking
+	 * the height of `c_r`, since it assumes the upper nodes of `node`
+	 * are all unchanged. Hence, we need the following:  */
+	__node_update_height_upwardly(c_l);
+	return c_l;
+}
+
+/* Left rotation: Assumption: `node.child_r != NULL`
+ *       |                  |
+ *      node               c_r
+ *      / \                / \
+ *    ..   c_r    =>    node  .
+ *         / \          / \
+ *      c_rl  .       ..  c_rl
+ */
+struct avltree_node *__avltree_rotation_l(struct avltree_node *node)
+{
+	struct avltree_node *c_r = NULL;
+	struct avltree_node *c_rl = NULL;
+	assert(NULL != node);
+	assert(NULL != node->__child_r);
+	c_r = node->__child_r;
+	c_rl = c_r->__child_l;  /* could be `NULL` */
+
+	if (NULL != node->__father) {
+		int left = (node == node->__father->__child_l);
+		if (left)
+			node->__father->__child_l = c_r;
+		else
+			node->__father->__child_r = c_r;
+	}
+	c_r->__father = node->__father;
+	c_r->__child_l = node;
+	node->__father = c_r;
+	node->__child_r = c_rl;
+	if (NULL != c_rl)
+		c_rl->__father = node;
+	__node_update_height_upwardly(node);
+	/* If the height of `node` is unchanged, this function stop checking
+	 * the height of `c_r`, since it assumes the upper nodes of `node`
+	 * are all unchanged. Hence, we need the following:  */
+	__node_update_height_upwardly(c_r);
+	return c_r;
+}
+
+/* Rebalance the `node` when it is unbalanced
+ */
+struct avltree_node *__avltree_rebalance(struct avltree_node *node)
+{
+	/* Case 1: RR type   Case 2: LL type   Case 3: LR type   Case 4: RL type
+	 *       |                   |               |                 |
+	 *      node (2)       (-2) node       (-2) node              node (2)
+	 *        \                 /               /                   \
+	 *        c_r (1)    (-1) c_l         (1) c_l                   c_r (-1)
+	 *          \             /                 \                   /
+	 *          c_rr       c_ll                 c_lr             c_rl
+	 * Case 1: rota_l    Case 2: rota_r    Case 3: rota_r    Case 4: rota_l
+	 */
+	int bfac_node = 0;
+	assert(NULL != node);
+	bfac_node = __node_balace_factor(node);
+
+	if (bfac_node == 2)
+		return __avltree_rotation_l(node);
+	if (bfac_node == -2)
+		return __avltree_rotation_r(node);
+	return node;
+}
+
 int avltree_insert(avltree *tree, void *ele, __fn_cmp _f)
 {
 	struct avltree_node *node = NULL;
@@ -570,6 +648,19 @@ int avltree_insert(avltree *tree, void *ele, __fn_cmp _f)
 		return 0;  /* failure */
 	}
 	memcpy(__node_data(node), ele, tree->__elesize);
+	/*
+	 * Re-balancing
+	 */
+	while (NULL != node_father) {
+		struct avltree_node *tmp_root = __avltree_rebalance(node_father);
+		if (node_father == tmp_root)
+			node_father = node_father->__father;
+		else {
+			if (node_father == tree->__root_node)
+				tree->__root_node = tmp_root;
+			break;
+		}
+	}
 	return 1;
 }
 
@@ -577,22 +668,26 @@ int avltree_insert(avltree *tree, void *ele, __fn_cmp _f)
  */
 int avltree_delete_g(avltree *tree, void *key, __fn_cmp _f, int force_buffer)
 {
-	struct avltree_node *the_node = NULL;
+	struct avltree_node *node = NULL;
 	int left = 0;
 
 	assert(NULL != tree);
 	assert(NULL != key);
 	assert(NULL != _f);
 
-	if (NULL == (the_node = avltree_get_iter_g(tree, key, _f, &left))) {
+	if (NULL == (node = avltree_get_iter_g(tree, key, _f, &left))) {
 		printf("Error ... avltree_delete\n");
 		return 0;  /* failure */
 	}
-	__bintree_rm_node(tree, the_node, force_buffer);
+	__bintree_rm_node(tree, node, force_buffer);
 	/*
-	 * Update tree statistics
+	 * Re-balancing
+	 *
 	 */
-
+	while (NULL != node->__father) {
+		/* ... */
+		node = node->__father;
+	}
 	return 1;
 }
 
