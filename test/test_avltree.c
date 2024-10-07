@@ -161,7 +161,7 @@ void test_1(void)
 void test_2(void)
 {
 	avltree *tree = avltree_create(sizeof(int));
-	/* avltree_iter *iter = NULL; */
+	avltree_iter *iter = NULL;
 	int data = 0;
 	int __n = 100000;
 
@@ -170,6 +170,15 @@ void test_2(void)
 	}
 	printf("height = %i\n", avltree_height(tree));
 	printf("root = %i\n", *(int *) avltree_iter_data(avltree_root(tree)));
+
+	/* test iteration */
+	data = 0;
+	iter = avltree_iter_front(tree);
+	while (NULL != iter) {
+		assert(data == *(int *) avltree_iter_data(iter));
+		iter = avltree_iter_next(iter);
+		data++;
+	}
 
 	/* search */
 	data = 8241;

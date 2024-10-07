@@ -51,11 +51,11 @@ avltree_iter *__avltree_iter_leftchild(const avltree_iter *iter);
 avltree_iter *__avltree_iter_rightchild(const avltree_iter *iter);
 
 int avltree_insert(avltree *tree, void *ele, __fn_cmp _f);
+int avltree_delete(avltree *tree, void *key, __fn_cmp _f);
 
 void *avltree_get(const avltree *tree, void *key, __fn_cmp _f);
 avltree_iter *avltree_get_iter(const avltree *tree, void *key, __fn_cmp _f);
 avltree_iter *avltree_get_iter_g(const avltree *tree, void *key, __fn_cmp _f, int *is_left);
-int avltree_delete(avltree *tree, void *key, __fn_cmp _f);
 
 #ifdef __cplusplus
 }
