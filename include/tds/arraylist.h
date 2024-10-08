@@ -14,10 +14,22 @@ extern "C" {
 /******************************************************************************
  * Array List
  *
- *
+ * An array list is a resizable array that can automatically adjust its size
+ * to accommodate added or removed elements
  *****************************************************************************/
 
 typedef struct tds_arraylist  tds_arraylist;
+
+/* On failure, return `NULL`
+ * The initial capacity is defined in macro `__tds_arraylist_init_len` (8)
+ */
+tds_arraylist *tds_arraylist_create(size_t elesize);
+
+/* On failure, return `NULL`
+ * The initial capacity is at least `__tds_arraylist_init_len`, greater
+ * 	or equal to the input `capacity`
+ */
+tds_arraylist *tds_arraylist_create_g(size_t elesize, size_t capacity);
 
 /* On failure, the program is stopped
  */
@@ -25,15 +37,7 @@ tds_arraylist *tds_arraylist_force_create(size_t elesize);
 
 /* On failure, the program is stopped
  */
-tds_arraylist *tds_arraylist_force_create_gen(size_t elesize, size_t capacity);
-
-/* On failure, return `NULL`
- */
-tds_arraylist *tds_arraylist_create(size_t elesize);
-
-/* On failure, return `NULL`
- */
-tds_arraylist *tds_arraylist_create_gen(size_t elesize, size_t capacity);
+tds_arraylist *tds_arraylist_force_create_g(size_t elesize, size_t capacity);
 
 void tds_arraylist_free(tds_arraylist *list);
 
@@ -56,9 +60,9 @@ int tds_arraylist_pushback(tds_arraylist *list, const void *ele);
  */
 void tds_arraylist_force_pushback(tds_arraylist *list, const void *ele);
 
-/* Move all elements in `v2` into `list`
+/* Move all elements in `l2` into `list`
  */
-void tds_arraylist_force_eat_list(tds_arraylist *list, tds_arraylist *v2);
+void tds_arraylist_force_eat_list(tds_arraylist *list, tds_arraylist *l2);
 
 void *tds_arraylist_popback(tds_arraylist *list);
 void *tds_arraylist_delete(tds_arraylist *list, size_t idx);

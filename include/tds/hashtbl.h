@@ -15,13 +15,17 @@ extern "C" {
 /******************************************************************************
  * Hash Table
  *
- *
+ * Hashtable (or hash table) is a data structure that implements an associative
+ * array, allowing for efficient data retrieval based on a key. It uses a
+ * technique called hashing to convert keys into indices in an underlying array,
+ * which allows for average-case constant time complexity O(1) for search,
+ * insert, and delete operations.
  *****************************************************************************/
 
 typedef struct tds_hashtbl  tds_hashtbl;
 
-tds_hashtbl *tds_hashtbl_create_gen(size_t keysize, size_t valuesize, size_t init_capacity);
-tds_hashtbl *tds_hashtbl_force_create_gen(size_t keysize, size_t valuesize, size_t init_capacity);
+tds_hashtbl *tds_hashtbl_create_g(size_t keysize, size_t valuesize, size_t init_capacity);
+tds_hashtbl *tds_hashtbl_force_create_g(size_t keysize, size_t valuesize, size_t init_capacity);
 tds_hashtbl *tds_hashtbl_create(size_t keysize, size_t valuesize);
 tds_hashtbl *tds_hashtbl_force_create(size_t keysize, size_t valuesize);
 
@@ -66,15 +70,7 @@ int tds_hashtbl_rm(tds_hashtbl *tbl, const void *key);
  * 		- If the location is free (return 0), the location is for newly inserting elements
  * 		- If the location has elements (return 1), the location is for changing existing elements
  */
-size_t __tds_hashtbl_get_loc(const tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state);
-
-/* #define __tds_debug
- */
-
-#ifdef __tds_debug
-size_t __tds_hashtbl_get_n_conflicts(const tds_hashtbl *tbl);
-void __tds_hashtbl_reset_n_conflicts(tds_hashtbl *tbl);
-#endif
+size_t __tds_hashtbl_getloc(const tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state);
 
 #ifdef __cplusplus
 }

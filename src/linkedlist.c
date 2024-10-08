@@ -51,13 +51,12 @@ void *__linkedlist_node_data(const struct tds_linkedlist_node *node)
 }
 
 
-
 /* If there is space, then store node to buffer
  * Otherwise, free the node
  */
 void __store_node_to_linkedlist_buffer(struct tds_linkedlist_node *node, tds_linkedlist *list)
 {
-	if (tds_linkedlist_buffer_len(list) < list->__buffer_limit) {
+	if (tds_linkedlist_bufferlen(list) < list->__buffer_limit) {
 		node->__next = list->__buffer_head;  /* maintain the pointer to next, can be NULL */
 		list->__buffer_head = node;
 	} else
@@ -86,14 +85,14 @@ struct tds_linkedlist_node *__get_linkedlist_node_for_appending(tds_linkedlist *
 }
 
 
-tds_linkedlist *tds_linkedlist_create_gen(size_t elesize, size_t buffer_limit)
+tds_linkedlist *tds_linkedlist_create_g(size_t elesize, size_t buffer_limit)
 {
 	tds_linkedlist *list = NULL;
 
 	assert(elesize > 0);
 
 	if (NULL == (list = (tds_linkedlist *) malloc(sizeof(tds_linkedlist)))) {
-		printf("Error ... tds_linkedlist_create_gen\n");
+		printf("Error ... tds_linkedlist_create_g\n");
 		return NULL;
 	}
 	list->__head = NULL;
@@ -107,7 +106,7 @@ tds_linkedlist *tds_linkedlist_create_gen(size_t elesize, size_t buffer_limit)
 
 tds_linkedlist *tds_linkedlist_create(size_t elesize)
 {
-	return tds_linkedlist_create_gen(elesize, __linkedlist_buffer_limit);
+	return tds_linkedlist_create_g(elesize, __linkedlist_buffer_limit);
 }
 
 void tds_linkedlist_prealloc(tds_linkedlist *list, size_t n)
@@ -116,9 +115,9 @@ void tds_linkedlist_prealloc(tds_linkedlist *list, size_t n)
 	assert(n <= list->__buffer_limit);
 
 	for (idx = 0; idx < n; idx++) {
-		struct tds_linkedlist_node *node = __create_linkedlist_node(list->__elesize);
+		struct tds_linkedlist_node *node = NULL;
 
-		if (node == NULL) {
+		if (NULL == (node = __create_linkedlist_node(list->__elesize))) {
 			printf("Error ... tds_linkedlist_prealloc\n");
 			break;
 		}
@@ -159,7 +158,7 @@ size_t tds_linkedlist_len(const tds_linkedlist *list)
 	return list->__len;
 }
 
-size_t tds_linkedlist_buffer_len(const tds_linkedlist *list)
+size_t tds_linkedlist_bufferlen(const tds_linkedlist *list)
 {
 	size_t len = 0;
 	struct tds_linkedlist_node *node = NULL;
@@ -175,107 +174,32 @@ size_t tds_linkedlist_buffer_len(const tds_linkedlist *list)
 }
 
 
-tds_linkedlist_iter *tds_linkedlist_iter_head(const tds_linkedlist *list)
+tds_linkedlistiter *tds_linkedlistiter_head(const tds_linkedlist *list)
 {
 	return list->__head;
 }
 
-tds_linkedlist_iter *tds_linkedlist_iter_tail(const tds_linkedlist *list)
+tds_linkedlistiter *tds_linkedlistiter_tail(const tds_linkedlist *list)
 {
 	return list->__tail;
 }
 
-tds_linkedlist_iter *tds_linkedlist_iter_prev(const tds_linkedlist_iter *iter)
+tds_linkedlistiter *tds_linkedlistiter_prev(const tds_linkedlistiter *iter)
 {
 	return iter->__prev;
 }
 
-tds_linkedlist_iter *tds_linkedlist_iter_next(const tds_linkedlist_iter *iter)
+tds_linkedlistiter *tds_linkedlistiter_next(const tds_linkedlistiter *iter)
 {
 	return iter->__next;
 }
 
-void *tds_linkedlist_iter_data(const tds_linkedlist_iter *iter)
+void *tds_linkedlistiter_data(const tds_linkedlistiter *iter)
 {
 	return __linkedlist_node_data(iter);
 }
 
-int tds_linkedlist_insert_before(tds_linkedlist *list, tds_linkedlist_iter *iter, void *data)
-{
-	struct tds_linkedlist_node *node_new = NULL;
-
-	assert(NULL != list);
-	assert(NULL != iter);
-	assert(NULL != data);
-
-	if (NULL == (node_new = __create_linkedlist_node(list->__elesize))) {
-		printf("Error ... tds_linkedlist_insert_before\n");
-		return 0;  /* failure */
-	}
-	node_new->__prev = iter->__prev;
-	node_new->__next = iter;
-	memcpy(__linkedlist_node_data(node_new), data, list->__elesize);
-
-	if (NULL != iter->__prev)
-		iter->__prev->__next = node_new;
-	else
-		list->__head = node_new;
-
-	iter->__prev = node_new;
-	list->__len++;
-	return 1;
-}
-
-int tds_linkedlist_insert_after(tds_linkedlist *list, tds_linkedlist_iter *iter, void *data)
-{
-	struct tds_linkedlist_node *node_new = NULL;
-
-	assert(NULL != list);
-	assert(NULL != iter);
-	assert(NULL != data);
-
-	if (NULL == (node_new = __create_linkedlist_node(list->__elesize))) {
-		printf("Error ... tds_linkedlist_insert_before\n");
-		return 0;  /* failure */
-	}
-	node_new->__prev = iter;
-	node_new->__next = iter->__next;
-	memcpy(__linkedlist_node_data(node_new), data, list->__elesize);
-
-	if (NULL != iter->__next)
-		iter->__next->__prev = node_new;
-	else
-		list->__tail = node_new;
-
-	iter->__next = node_new;
-	list->__len++;
-	return 1;
-}
-
-void tds_linkedlist_delete_node(tds_linkedlist *list, tds_linkedlist_iter *iter)
-{
-	assert(NULL != list);
-	assert(NULL != iter);
-
-	list->__len--;
-
-	if (list->__len == 0) {
-		list->__head = NULL;
-		list->__tail = NULL;
-	} else {
-		if (iter == list->__head)
-			list->__head = iter->__next;
-		if (iter == list->__tail)
-			list->__tail = iter->__prev;
-	}
-	if (NULL != iter->__next)
-		iter->__next->__prev = iter->__prev;
-	if (NULL != iter->__prev)
-		iter->__prev->__next = iter->__next;
-	__store_node_to_linkedlist_buffer(iter, list);
-}
-
-int tds_linkedlist_push_front(tds_linkedlist *list, void *data)
+int tds_linkedlist_pushfront(tds_linkedlist *list, void *data)
 {
 	struct tds_linkedlist_node *node = NULL;
 
@@ -283,7 +207,7 @@ int tds_linkedlist_push_front(tds_linkedlist *list, void *data)
 	assert(NULL != data);
 
 	if (NULL == (node = __get_linkedlist_node_for_appending(list))) {
-		printf("Error ... tds_linkedlist_push_front\n");
+		printf("Error ... tds_linkedlist_pushfront\n");
 		return 0;  /* failure */
 	}
 	memcpy(__linkedlist_node_data(node), data, list->__elesize);
@@ -302,7 +226,7 @@ int tds_linkedlist_push_front(tds_linkedlist *list, void *data)
 	return 1;
 }
 
-int tds_linkedlist_push_back(tds_linkedlist *list, void *data)
+int tds_linkedlist_pushback(tds_linkedlist *list, void *data)
 {
 	struct tds_linkedlist_node *node = NULL;
 
@@ -310,7 +234,7 @@ int tds_linkedlist_push_back(tds_linkedlist *list, void *data)
 	assert(NULL != data);
 
 	if (NULL == (node = __get_linkedlist_node_for_appending(list))) {
-		printf("Error ... tds_linkedlist_push_back\n");
+		printf("Error ... tds_linkedlist_pushback\n");
 		return 0;  /* failure */
 	}
 	memcpy(__linkedlist_node_data(node), data, list->__elesize);
@@ -328,6 +252,47 @@ int tds_linkedlist_push_back(tds_linkedlist *list, void *data)
 	return 1;
 }
 
+
+void tds_linkedlist_popfront(tds_linkedlist *list)
+{
+	struct tds_linkedlist_node *node = NULL;
+
+	assert(NULL != list);
+	assert(list->__len > 0);
+
+	node = list->__head;
+	list->__len--;
+
+	if (list->__len == 0) {
+		list->__head = NULL;
+		list->__tail = NULL;
+	} else {
+		list->__head = node->__next;  /* set the head pointer, cannot be NULL */
+		list->__head->__prev = NULL;
+	}
+	__store_node_to_linkedlist_buffer(node, list);
+}
+
+void tds_linkedlist_popback(tds_linkedlist *list)
+{
+	struct tds_linkedlist_node *node = NULL;
+
+	assert(NULL != list);
+	assert(list->__len > 0);
+
+	node = list->__tail;
+	list->__len--;
+
+	if (list->__len == 0) {
+		list->__head = NULL;
+		list->__tail = NULL;
+	} else {
+		list->__tail = node->__prev;  /* set the last pointer, cannot be NULL */
+		list->__tail->__next = NULL;
+	}
+	__store_node_to_linkedlist_buffer(node, list);
+}
+
 int tds_linkedlist_insert(tds_linkedlist *list, void *data, size_t n)
 {
 	struct tds_linkedlist_node *node = NULL;
@@ -339,9 +304,9 @@ int tds_linkedlist_insert(tds_linkedlist *list, void *data, size_t n)
 	assert(n <= list->__len);
 
 	if (n == 0)
-		return tds_linkedlist_push_front(list, data);
+		return tds_linkedlist_pushfront(list, data);
 	if (n == list->__len)
-		return tds_linkedlist_push_back(list, data);
+		return tds_linkedlist_pushback(list, data);
 	/* Now 1 <= n <= len - 1 */
 
 	node_post = list->__head;
@@ -376,59 +341,93 @@ int tds_linkedlist_insert(tds_linkedlist *list, void *data, size_t n)
 	return 1;
 }
 
-
-void tds_linkedlist_pop_front(tds_linkedlist *list)
+int tds_linkedlist_insert_before(tds_linkedlist *list, tds_linkedlistiter *iter, void *data)
 {
-	struct tds_linkedlist_node *node = NULL;
+	struct tds_linkedlist_node *node_new = NULL;
 
 	assert(NULL != list);
-	assert(list->__len > 0);
+	assert(NULL != iter);
+	assert(NULL != data);
 
-	node = list->__head;
+	if (NULL == (node_new = __create_linkedlist_node(list->__elesize))) {
+		printf("Error ... tds_linkedlist_insert_before\n");
+		return 0;  /* failure */
+	}
+	node_new->__prev = iter->__prev;
+	node_new->__next = iter;
+	memcpy(__linkedlist_node_data(node_new), data, list->__elesize);
+
+	if (NULL != iter->__prev)
+		iter->__prev->__next = node_new;
+	else
+		list->__head = node_new;
+
+	iter->__prev = node_new;
+	list->__len++;
+	return 1;
+}
+
+int tds_linkedlist_insert_after(tds_linkedlist *list, tds_linkedlistiter *iter, void *data)
+{
+	struct tds_linkedlist_node *node_new = NULL;
+
+	assert(NULL != list);
+	assert(NULL != iter);
+	assert(NULL != data);
+
+	if (NULL == (node_new = __create_linkedlist_node(list->__elesize))) {
+		printf("Error ... tds_linkedlist_insert_before\n");
+		return 0;  /* failure */
+	}
+	node_new->__prev = iter;
+	node_new->__next = iter->__next;
+	memcpy(__linkedlist_node_data(node_new), data, list->__elesize);
+
+	if (NULL != iter->__next)
+		iter->__next->__prev = node_new;
+	else
+		list->__tail = node_new;
+
+	iter->__next = node_new;
+	list->__len++;
+	return 1;
+}
+
+void tds_linkedlist_delete(tds_linkedlist *list, tds_linkedlistiter *iter)
+{
+	assert(NULL != list);
+	assert(NULL != iter);
+
 	list->__len--;
 
 	if (list->__len == 0) {
 		list->__head = NULL;
 		list->__tail = NULL;
 	} else {
-		list->__head = node->__next;  /* set the head pointer, cannot be NULL */
-		list->__head->__prev = NULL;
+		if (iter == list->__head)
+			list->__head = iter->__next;
+		if (iter == list->__tail)
+			list->__tail = iter->__prev;
 	}
-	__store_node_to_linkedlist_buffer(node, list);
+	if (NULL != iter->__next)
+		iter->__next->__prev = iter->__prev;
+	if (NULL != iter->__prev)
+		iter->__prev->__next = iter->__next;
+	__store_node_to_linkedlist_buffer(iter, list);
 }
 
-void tds_linkedlist_pop_back(tds_linkedlist *list)
-{
-	struct tds_linkedlist_node *node = NULL;
-
-	assert(NULL != list);
-	assert(list->__len > 0);
-
-	node = list->__tail;
-	list->__len--;
-
-	if (list->__len == 0) {
-		list->__head = NULL;
-		list->__tail = NULL;
-	} else {
-		list->__tail = node->__prev;  /* set the last pointer, cannot be NULL */
-		list->__tail->__next = NULL;
-	}
-	__store_node_to_linkedlist_buffer(node, list);
-}
-
-void tds_linkedlist_delete(tds_linkedlist *list, size_t n)
+void tds_linkedlist_delete2(tds_linkedlist *list, size_t loc)
 {
 	struct tds_linkedlist_node *node = NULL;
 	size_t idx = 0;
 
 	assert(NULL != list);
 	assert(list->__len > 0);
-	assert(n < list->__len);
+	assert(loc < list->__len);
 
 	node = list->__head;
 
-	while (idx < n) {
+	while (idx < loc) {
 		node = node->__next;
 		idx++;
 	}

@@ -7,12 +7,12 @@
 const char *__base7 = "xxadrfh";
 
 /* testing
- * 	- tds_hashtbl_force_create_gen
+ * 	- tds_hashtbl_force_create_g
  * 	- tds_hashtbl_free
  *
  * 	- tds_hashtbl_force_set
  * 	- tds_hashtbl_get
- * 	- __tds_hashtbl_get_loc
+ * 	- __tds_hashtbl_getloc
  *
  * 	- tds_hashtbl_rm
  */
@@ -22,8 +22,8 @@ void test_hashtable(void)
 	size_t idx = 0;
 	size_t buffersize = 16;
 
-	tds_string *key_tstr = tds_string_create_gen(buffersize);
-	tds_hashtbl *tbl = tds_hashtbl_force_create_gen(buffersize, sizeof(size_t), npairs / 10);
+	tds_string *key_tstr = tds_string_create_g(buffersize);
+	tds_hashtbl *tbl = tds_hashtbl_force_create_g(buffersize, sizeof(size_t), npairs / 10);
 
 	/* test set */
 #ifdef __tds_debug

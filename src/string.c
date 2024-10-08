@@ -23,7 +23,7 @@ struct tds_string
  * Create tds_string
  *****************************************************************************/
 
-tds_string *tds_string_create_gen(size_t buffersize)
+tds_string *tds_string_create_g(size_t buffersize)
 {
 	tds_string * str = NULL;
 	char *data;
@@ -52,7 +52,7 @@ tds_string *tds_string_create_gen(size_t buffersize)
 
 tds_string *tds_string_create(void)
 {
-	return tds_string_create_gen(__tds_string_initlen);
+	return tds_string_create_g(__tds_string_initlen);
 }
 
 tds_string *tds_string_create_substr(const tds_string *tstr, size_t pos, size_t n)

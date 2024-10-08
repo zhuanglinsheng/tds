@@ -14,7 +14,8 @@ extern "C" {
 /******************************************************************************
  * Array
  *
- *
+ * Array is a contiguous block of memory that cannot be changed once allocated,
+ * unless the reallocation function is called
  *****************************************************************************/
 
 typedef struct tds_array  tds_array;
@@ -29,11 +30,12 @@ tds_array *tds_array_create(size_t elesize, size_t capacity);
  */
 tds_array *tds_array_force_create(size_t elesize, size_t capacity);
 
-int tds_array_resize(tds_array *arr, size_t new_capacity);
-void tds_array_force_resize(tds_array *arr, size_t new_capacity);
+int tds_array_resize(tds_array **arr, size_t new_capacity);
+void tds_array_force_resize(tds_array **arr, size_t new_capacity);
 
 void tds_array_free(tds_array *arr);
 
+void * tds_array_data(const tds_array *arr);
 size_t tds_array_elesize(const tds_array *arr);
 size_t tds_array_capacity(const tds_array *arr);
 

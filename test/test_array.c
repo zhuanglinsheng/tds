@@ -34,7 +34,7 @@ void test_array(void)
 	tds_array_set(arr, 3, k3);
 	tds_array_set(arr, 4, k4);
 
-	tds_array_force_resize(arr, 10);
+	tds_array_force_resize(&arr, 10);
 
 	tds_array_set(arr, 5, k5);
 	tds_array_set(arr, 6, k6);

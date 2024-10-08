@@ -23,7 +23,7 @@ typedef struct tds_string  tds_string;
  */
 
 tds_string *tds_string_create(void);
-tds_string *tds_string_create_gen(size_t buffersize);
+tds_string *tds_string_create_g(size_t buffersize);
 tds_string *tds_string_create_from_cstr(const char *cstr, size_t n);
 tds_string *tds_string_create_substr(const tds_string *tstr, size_t pos, size_t n);
 tds_string *tds_string_create_substr2(const tds_string *tstr, size_t pos);

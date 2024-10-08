@@ -15,26 +15,15 @@ extern "C" {
 /******************************************************************************
  * Array List based Stack
  *
- *
+ * Stack is a structure that follows the "Last In, First Out" (LIFO) principle
  *****************************************************************************/
 
 typedef tds_arraylist  tds_stack_arr;
 
-/* On failure, exit the program
- */
-tds_stack_arr *tds_stack_arr_force_create(size_t elesize);
-
-/* On failure, exit the program
- */
-tds_stack_arr *tds_stack_arr_force_create_gen(size_t elesize, size_t capacity);
-
-/* On failure, return `NULL`
- */
 tds_stack_arr *tds_stack_arr_create(size_t elesize);
-
-/* On failure, return `NULL`
- */
-tds_stack_arr *tds_stack_arr_create_gen(size_t elesize, size_t capacity);
+tds_stack_arr *tds_stack_arr_create_g(size_t elesize, size_t capacity);
+tds_stack_arr *tds_stack_arr_force_create(size_t elesize);
+tds_stack_arr *tds_stack_arr_force_create_g(size_t elesize, size_t capacity);
 
 void tds_stack_arr_free(tds_stack_arr *stk);
 

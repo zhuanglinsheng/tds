@@ -13,25 +13,27 @@
 #define __tds_arraylist_init_len  8
 
 struct tds_arraylist {
-	tds_array *__data;  /* created by array construction function */
 	size_t __len;
+	tds_array *__data;  /* created by array construction function */
 };
 
 
-tds_arraylist *tds_arraylist_create_gen(size_t elesize, size_t capacity)
+tds_arraylist *tds_arraylist_create_g(size_t elesize, size_t capacity)
 {
 	tds_arraylist *list = NULL;
+	size_t true_capacity = __tds_arraylist_init_len;
 
 	assert(elesize > 0);
-	assert(capacity > 0);
 
+	while (true_capacity < capacity)
+		true_capacity *= 2;
 	if (NULL == (list = (tds_arraylist *)malloc(sizeof(tds_arraylist)))) {
-		printf("Error ... tds_arraylist_create_gen\n");
+		printf("Error ... tds_arraylist_create_g\n");
 		return NULL;
 	}
-	if (NULL == (list->__data = tds_array_create(elesize, capacity))) {
+	if (NULL == (list->__data = tds_array_create(elesize, true_capacity))) {
 		free(list);
-		printf("Error ... tds_arraylist_create_gen\n");
+		printf("Error ... tds_arraylist_create_g\n");
 		return NULL;
 	}
 	list->__len = 0;
@@ -40,15 +42,15 @@ tds_arraylist *tds_arraylist_create_gen(size_t elesize, size_t capacity)
 
 tds_arraylist *tds_arraylist_create(size_t elesize)
 {
-	return tds_arraylist_create_gen(elesize, __tds_arraylist_init_len);
+	return tds_arraylist_create_g(elesize, __tds_arraylist_init_len);
 }
 
-tds_arraylist *tds_arraylist_force_create_gen(size_t elesize, size_t capacity)
+tds_arraylist *tds_arraylist_force_create_g(size_t elesize, size_t capacity)
 {
-	tds_arraylist* re = tds_arraylist_create_gen(elesize, capacity);
+	tds_arraylist* re = tds_arraylist_create_g(elesize, capacity);
 
 	if (NULL == re) {
-		printf("Error .. tds_arraylist_force_create_gen\n");
+		printf("Error .. tds_arraylist_force_create_g\n");
 		exit(-1);
 	}
 	return re;
@@ -56,7 +58,7 @@ tds_arraylist *tds_arraylist_force_create_gen(size_t elesize, size_t capacity)
 
 tds_arraylist *tds_arraylist_force_create(size_t elesize)
 {
-	return tds_arraylist_force_create_gen(elesize, __tds_arraylist_init_len);
+	return tds_arraylist_force_create_g(elesize, __tds_arraylist_init_len);
 }
 
 void tds_arraylist_free(tds_arraylist *list)
@@ -100,10 +102,13 @@ int tds_arraylist_pushback(tds_arraylist *list, const void *ele)
 		list->__len += 1;
 		return 1;  /* success */
 	} else {
-		if (!tds_array_resize(list->__data, 2 * tds_arraylist_capacity(list))) {
+		tds_array *dta_arr = list->__data;
+
+		if (!tds_array_resize(&dta_arr, 2 * tds_arraylist_capacity(list))) {
 			printf("Error ... tds_arraylist_pushback\n");
 			return 0;  /* failure */
 		}
+		list->__data = dta_arr;
 		return tds_arraylist_pushback(list, ele);
 	}
 }

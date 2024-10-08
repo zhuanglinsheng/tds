@@ -10,9 +10,9 @@ tds_stack_arr *tds_stack_arr_force_create(size_t elesize)
 	return (tds_stack_arr *) tds_arraylist_force_create(elesize);
 }
 
-tds_stack_arr *tds_stack_arr_force_create_gen(size_t elesize, size_t capacity)
+tds_stack_arr *tds_stack_arr_force_create_g(size_t elesize, size_t capacity)
 {
-	return tds_arraylist_force_create_gen(elesize, capacity);
+	return tds_arraylist_force_create_g(elesize, capacity);
 }
 
 tds_stack_arr *tds_stack_arr_create(size_t elesize)
@@ -20,9 +20,9 @@ tds_stack_arr *tds_stack_arr_create(size_t elesize)
 	return (tds_stack_arr *) tds_arraylist_create(elesize);
 }
 
-tds_stack_arr *tds_stack_arr_create_gen(size_t elesize, size_t capacity)
+tds_stack_arr *tds_stack_arr_create_g(size_t elesize, size_t capacity)
 {
-	return (tds_stack_arr *) tds_arraylist_create_gen(elesize, capacity);
+	return (tds_stack_arr *) tds_arraylist_create_g(elesize, capacity);
 }
 
 void tds_stack_arr_free(tds_stack_arr *stk)

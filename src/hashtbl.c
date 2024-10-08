@@ -134,9 +134,19 @@ struct tds_hashtbl {
 
 #ifdef __tds_debug
 size_t __n_conflicts = 0;
+
+size_t __tds_hashtbl_get_n_conflicts(const tds_hashtbl *tbl)
+{
+	return __n_conflicts;
+}
+
+void __tds_hashtbl_reset_n_conflicts(tds_hashtbl *tbl)
+{
+	__n_conflicts = 0;
+}
 #endif
 
-tds_hashtbl *tds_hashtbl_create_gen(size_t key_size, size_t value_size, size_t init_capacity)
+tds_hashtbl *tds_hashtbl_create_g(size_t key_size, size_t value_size, size_t init_capacity)
 {
 	tds_hashtbl *tbl = (tds_hashtbl *) malloc(sizeof(tds_hashtbl));
 	size_t capacity = __thashtbl_init_capacity;
@@ -144,25 +154,25 @@ tds_hashtbl *tds_hashtbl_create_gen(size_t key_size, size_t value_size, size_t i
 	while (capacity < init_capacity)
 		capacity *= 2;
 	if (NULL == tbl) {
-		printf("Error ... tds_hashtbl_create_gen\n");
+		printf("Error ... tds_hashtbl_create_g\n");
 		return NULL;
 	}
 	if (NULL == (tbl->__keys = tds_array_create(key_size, capacity))) {
 		free(tbl);
-		printf("Error ... tds_hashtbl_create_gen\n");
+		printf("Error ... tds_hashtbl_create_g\n");
 		return NULL;
 	}
 	if (NULL == (tbl->__values = tds_array_create(value_size, capacity))) {
 		free(tbl->__keys);
 		free(tbl);
-		printf("Error ... tds_hashtbl_create_gen\n");
+		printf("Error ... tds_hashtbl_create_g\n");
 		return NULL;
 	}
 	if (NULL == (tbl->__mark_delete = tds_bitarray_create(capacity))) {
 		free(tbl->__keys);
 		free(tbl->__values);
 		free(tbl);
-		printf("Error ... tds_hashtbl_create_gen\n");
+		printf("Error ... tds_hashtbl_create_g\n");
 		return NULL;
 	}
 	tbl->__usage = 0;
@@ -171,15 +181,15 @@ tds_hashtbl *tds_hashtbl_create_gen(size_t key_size, size_t value_size, size_t i
 
 tds_hashtbl *tds_hashtbl_create(size_t key_size, size_t value_size)
 {
-	return tds_hashtbl_create_gen(key_size, value_size, __thashtbl_init_capacity);
+	return tds_hashtbl_create_g(key_size, value_size, __thashtbl_init_capacity);
 }
 
-tds_hashtbl *tds_hashtbl_force_create_gen(size_t key_size, size_t value_size, size_t init_capacity)
+tds_hashtbl *tds_hashtbl_force_create_g(size_t key_size, size_t value_size, size_t init_capacity)
 {
-	tds_hashtbl *tbl = tds_hashtbl_create_gen(key_size, value_size, init_capacity);
+	tds_hashtbl *tbl = tds_hashtbl_create_g(key_size, value_size, init_capacity);
 
 	if (NULL == tbl) {
-		printf("Error ... tds_hashtbl_force_create_gen\n");
+		printf("Error ... tds_hashtbl_force_create_g\n");
 		exit(-1);
 	}
 	return tbl;
@@ -187,7 +197,7 @@ tds_hashtbl *tds_hashtbl_force_create_gen(size_t key_size, size_t value_size, si
 
 tds_hashtbl *tds_hashtbl_force_create(size_t key_size, size_t value_size)
 {
-	return tds_hashtbl_force_create_gen(key_size, value_size, __thashtbl_init_capacity);
+	return tds_hashtbl_force_create_g(key_size, value_size, __thashtbl_init_capacity);
 }
 
 void tds_hashtbl_free(tds_hashtbl *tbl)
@@ -221,7 +231,7 @@ double tds_hashtbl_load_factor(const tds_hashtbl *tbl)
 int tds_hashtbl_contains(const tds_hashtbl *tbl, const void *key, size_t *loc)
 {
 	int occupied = 0;
-	*loc = __tds_hashtbl_get_loc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
+	*loc = __tds_hashtbl_getloc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
 
 	if (!occupied)
 		return 0;
@@ -233,7 +243,7 @@ int tds_hashtbl_contains(const tds_hashtbl *tbl, const void *key, size_t *loc)
 void *tds_hashtbl_get(const tds_hashtbl *tbl, const void *key)
 {
 	int occupied = 0;
-	size_t loc = __tds_hashtbl_get_loc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
+	size_t loc = __tds_hashtbl_getloc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
 
 	if (!occupied)  /* the location is free */
 		return NULL;
@@ -245,7 +255,7 @@ void *tds_hashtbl_get(const tds_hashtbl *tbl, const void *key)
 int tds_hashtbl_set(tds_hashtbl *tbl, const void *key, const void *value)
 {
 	int occupied = 0;
-	size_t loc = __tds_hashtbl_get_loc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
+	size_t loc = __tds_hashtbl_getloc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
 
 	if (!occupied)  /* the location is originally free */
 		tbl->__usage++;
@@ -307,7 +317,7 @@ static int __is_key_empty(const tds_hashtbl *tbl, size_t loc)
 	return 1;
 }
 
-size_t __tds_hashtbl_get_loc(const tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state)
+size_t __tds_hashtbl_getloc(const tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state)
 {
 	size_t key_size = tds_array_elesize(tbl->__keys);
 	size_t code = __tds_hashtbl_code_fn(key, key_size, __thashtbl_default_base);
@@ -389,15 +399,3 @@ int __tds_hashtbl_try_expand(tds_hashtbl *tbl)
 	tbl->__mark_delete = new_delete_marker;
 	return 1;
 }
-
-#ifdef __tds_debug
-size_t __tds_hashtbl_get_n_conflicts(const tds_hashtbl *tbl)
-{
-	return __n_conflicts;
-}
-
-void __tds_hashtbl_reset_n_conflicts(tds_hashtbl *tbl)
-{
-	__n_conflicts = 0;
-}
-#endif

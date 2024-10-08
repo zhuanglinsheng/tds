@@ -14,11 +14,11 @@ extern "C" {
 /******************************************************************************
  * AVL Tree
  *
- * Balanced Binary Tree.
+ * AVL Tree is a balanced binary tree
  *****************************************************************************/
 
-typedef struct avltree  avltree;
-typedef struct avltree_node  avltree_iter;
+typedef struct tds_avltree  tds_avltree;
+typedef struct tds_avltreenode  tds_avltreeiter;
 
 /* Comparing function
  *
@@ -29,32 +29,33 @@ typedef struct avltree_node  avltree_iter;
  */
 typedef int __fn_cmp_t(void *_a, void *_b);
 
-avltree *avltree_create(size_t elesize);
-avltree *avltree_create_g(size_t elesize, size_t bufferlim);
+tds_avltree *tds_avltree_create(size_t elesize);
+tds_avltree *tds_avltree_create_g(size_t elesize, size_t bufferlim);
 
-void avltree_free(avltree *tree);
-void avltree_free_buffer(avltree *tree);
+void tds_avltree_free(tds_avltree *tree);
+void tds_avltree_free_buffer(tds_avltree *tree);
 
-size_t avltree_len(const avltree *tree);
-int avltree_height(const avltree *tree);
-size_t avltree_elesize(const avltree *tree);
-void *avltree_smallest(const avltree *tree);
-void *avltree_largest(const avltree *tree);
-avltree_iter *avltree_root(const avltree *tree);
+size_t tds_avltree_len(const tds_avltree *tree);
+int tds_avltree_height(const tds_avltree *tree);
+size_t tds_avltree_elesize(const tds_avltree *tree);
+void *tds_avltree_smallest(const tds_avltree *tree);
+void *tds_avltree_largest(const tds_avltree *tree);
 
-void *avltree_iter_data(avltree_iter *iter);
-avltree_iter *avltree_iter_front(const avltree *tree);
-avltree_iter *avltree_iter_back(const avltree *tree);
-avltree_iter *avltree_iter_next(avltree_iter *iter);
-avltree_iter *avltree_iter_prev(avltree_iter *iter);
-avltree_iter *__avltree_iter_leftchild(const avltree_iter *iter);
-avltree_iter *__avltree_iter_rightchild(const avltree_iter *iter);
+void *tds_avltreeiter_data(tds_avltreeiter *iter);
+tds_avltreeiter *tds_avltreeiter_front(const tds_avltree *tree);
+tds_avltreeiter *tds_avltreeiter_back(const tds_avltree *tree);
+tds_avltreeiter *tds_avltreeiter_next(tds_avltreeiter *iter);
+tds_avltreeiter *tds_avltreeiter_prev(tds_avltreeiter *iter);
 
-int avltree_insert(avltree *tree, void *ele, __fn_cmp_t _f);
-int avltree_delete(avltree *tree, void *key, __fn_cmp_t _f);
+tds_avltreeiter *tds_avltree_root(const tds_avltree *tree);
+tds_avltreeiter *tds_avltreeiter_leftchild(const tds_avltreeiter *iter);
+tds_avltreeiter *tds_avltreeiter_rightchild(const tds_avltreeiter *iter);
 
-void *avltree_get(const avltree *tree, void *key, __fn_cmp_t _f);
-avltree_iter *avltree_get_iter(const avltree *tree, void *key, __fn_cmp_t _f);
+int tds_avltree_insert(tds_avltree *tree, void *ele, __fn_cmp_t _f);
+int tds_avltree_delete(tds_avltree *tree, void *key, __fn_cmp_t _f);
+
+void *tds_avltree_get(const tds_avltree *tree, void *key, __fn_cmp_t _f);
+tds_avltreeiter *tds_avltree_getiter(const tds_avltree *tree, void *key, __fn_cmp_t _f);
 
 #ifdef __cplusplus
 }

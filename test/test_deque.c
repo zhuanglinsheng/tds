@@ -9,10 +9,10 @@
  * 	- tds_deque_free
  * 	- tds_deque_len
  * 	- tds_deque_nblks
- * 	- tds_deque_push_front
- * 	- tds_deque_push_back
- * 	- tds_deque_pop_front
- * 	- tds_deque_pop_back
+ * 	- tds_deque_pushfront
+ * 	- tds_deque_pushback
+ * 	- tds_deque_popfront
+ * 	- tds_deque_popback
  */
 void test_1(void)
 {
@@ -20,38 +20,38 @@ void test_1(void)
 	int ele;
 
 	ele = 10;
-	tds_deque_push_front(q, &ele); /* ~~ 10 */
+	tds_deque_pushfront(q, &ele); /* ~~ 10 */
 
 	ele = -10;
-	tds_deque_push_back(q, &ele);  /* ~~ 10 | -10 ~~ */
+	tds_deque_pushback(q, &ele);  /* ~~ 10 | -10 ~~ */
 
 	assert(2 == tds_deque_len(q));
 	assert(2 == tds_deque_nblks(q));
 
-	tds_deque_pop_front(q);  /* ~~ empty | -10 ~~ */
+	tds_deque_popfront(q);  /* ~~ empty | -10 ~~ */
 	assert(1 == tds_deque_len(q));
 	assert(2 == tds_deque_nblks(q));
-	tds_deque_pop_front(q);  /* empty ~~ */
+	tds_deque_popfront(q);  /* empty ~~ */
 	assert(0 == tds_deque_len(q));
 	assert(1 == tds_deque_nblks(q));
-	tds_deque_push_front(q, &ele);  /* -10 ~~ */
+	tds_deque_pushfront(q, &ele);  /* -10 ~~ */
 	assert(1 == tds_deque_len(q));
 	assert(1 == tds_deque_nblks(q));
-	tds_deque_pop_back(q);  /* empty ~~ */
+	tds_deque_popback(q);  /* empty ~~ */
 	assert(0 == tds_deque_len(q));
 	assert(1 == tds_deque_nblks(q));
 	tds_deque_free(q);
 }
 
 /* testing
- * 	- tds_deque_create_gen
+ * 	- tds_deque_create_g
  * 	- tds_deque_free
  * 	- tds_deque_get
  * 	- tds_deque_set
  */
 void test_2(void)
 {
-	tds_deque *q = tds_deque_create_gen(sizeof(size_t), 16, 8);
+	tds_deque *q = tds_deque_create_g(sizeof(size_t), 16, 8);
 	size_t idx = 0;
 	size_t idx_front = 0;
 	size_t idx_back = 0;
@@ -59,9 +59,9 @@ void test_2(void)
 
 	for (idx = 0; idx < n; idx++) {
 		if (idx % 2 == 0)
-			tds_deque_push_front(q, &idx);
+			tds_deque_pushfront(q, &idx);
 		else
-			tds_deque_push_back(q, &idx);
+			tds_deque_pushback(q, &idx);
 	}
 	for (idx = 0; idx < n; idx++) {
 		if (idx % 2 == 0) {

@@ -21,18 +21,18 @@ void test_1(void)
 {
 	/* Creation
 	 */
-	avltree *tree = avltree_create_g(sizeof(int), 1);
-	avltree_iter *iter = NULL;
+	tds_avltree *tree = tds_avltree_create_g(sizeof(int), 1);
+	tds_avltreeiter *iter = NULL;
 	int data = 0;
 
 	/* Inserting
 	 */
 	data = 6;
-	avltree_insert(tree, &data, cmp_int);
+	tds_avltree_insert(tree, &data, cmp_int);
 	data = 7;
-	avltree_insert(tree, &data, cmp_int);
+	tds_avltree_insert(tree, &data, cmp_int);
 	data = 8;
-	avltree_insert(tree, &data, cmp_int);
+	tds_avltree_insert(tree, &data, cmp_int);
 	/*
 	 *     6           7
 	 *      \    =>   / \
@@ -40,16 +40,16 @@ void test_1(void)
 	 *        \
 	 *         8
 	 */
-	assert(3 == avltree_len(tree));
-	assert(2 == avltree_height(tree));
-	assert(7 == *(int *) avltree_iter_data(avltree_root(tree)));
-	assert(6 == *(int *) avltree_iter_data(__avltree_iter_leftchild(avltree_root(tree))));
-	assert(8 == *(int *) avltree_iter_data(__avltree_iter_rightchild(avltree_root(tree))));
+	assert(3 == tds_avltree_len(tree));
+	assert(2 == tds_avltree_height(tree));
+	assert(7 == *(int *) tds_avltreeiter_data(tds_avltree_root(tree)));
+	assert(6 == *(int *) tds_avltreeiter_data(tds_avltreeiter_leftchild(tds_avltree_root(tree))));
+	assert(8 == *(int *) tds_avltreeiter_data(tds_avltreeiter_rightchild(tds_avltree_root(tree))));
 
 	data = 9;
-	avltree_insert(tree, &data, cmp_int);
+	tds_avltree_insert(tree, &data, cmp_int);
 	data = 10;
-	avltree_insert(tree, &data, cmp_int);
+	tds_avltree_insert(tree, &data, cmp_int);
 	/*
 	 *       7                  7
 	 *      / \                / \
@@ -59,10 +59,10 @@ void test_1(void)
 	 *            \
 	 *            10
 	 */
-	assert(3 == avltree_height(tree));
+	assert(3 == tds_avltree_height(tree));
 
 	data = 11;
-	avltree_insert(tree, &data, cmp_int);
+	tds_avltree_insert(tree, &data, cmp_int);
 	/*
 	 *       7                9
 	 *      / \              / \
@@ -72,9 +72,9 @@ void test_1(void)
 	 *             \
 	 *              11
 	 */
-	assert(3 == avltree_height(tree));
+	assert(3 == tds_avltree_height(tree));
 	data = 12;
-	avltree_insert(tree, &data, cmp_int);
+	tds_avltree_insert(tree, &data, cmp_int);
 	/*
 	 *       9                 9
 	 *      / \              /   \
@@ -85,7 +85,7 @@ void test_1(void)
 	 *            12
 	 */
 	data = 13;
-	avltree_insert(tree, &data, cmp_int);
+	tds_avltree_insert(tree, &data, cmp_int);
 	/*
 	 *         9
 	 *       /   \
@@ -95,37 +95,37 @@ void test_1(void)
 	 *                \
 	 *                 13
 	 */
-	assert(4 == avltree_height(tree));
-	assert(9 == *(int *) avltree_iter_data(avltree_root(tree)));
+	assert(4 == tds_avltree_height(tree));
+	assert(9 == *(int *) tds_avltreeiter_data(tds_avltree_root(tree)));
 
-	assert(8 == avltree_len(tree));
-	assert(sizeof(int) == avltree_elesize(tree));
-	assert(6 == *(int *)(avltree_smallest(tree)));
-	assert(13 == *(int *)(avltree_largest(tree)));
+	assert(8 == tds_avltree_len(tree));
+	assert(sizeof(int) == tds_avltree_elesize(tree));
+	assert(6 == *(int *)(tds_avltree_smallest(tree)));
+	assert(13 == *(int *)(tds_avltree_largest(tree)));
 
 	/* test get */
 	data = 8;
-	assert(data == *(int *)avltree_get(tree, &data, cmp_int));
+	assert(data == *(int *)tds_avltree_get(tree, &data, cmp_int));
 
 	/* test iteration forwardly */
 	data = 6;
-	iter = avltree_iter_front(tree);
+	iter = tds_avltreeiter_front(tree);
 	while (NULL != iter) {
-		assert(*(int *)avltree_iter_data(iter) == data);
+		assert(*(int *)tds_avltreeiter_data(iter) == data);
 		data++;
-		iter = avltree_iter_next(iter);
+		iter = tds_avltreeiter_next(iter);
 	}
 	/* test iteration backwardly */
 	data = 13;
-	iter = avltree_iter_back(tree);
+	iter = tds_avltreeiter_back(tree);
 	while (NULL != iter) {
-		assert(data == *(int *)avltree_iter_data(iter));
+		assert(data == *(int *)tds_avltreeiter_data(iter));
 		data--;
-		iter = avltree_iter_prev(iter);
+		iter = tds_avltreeiter_prev(iter);
 	}
 	/* test delete */
 	data = 6;
-	avltree_delete(tree, &data, cmp_int);
+	tds_avltree_delete(tree, &data, cmp_int);
 	/*
 	 *         9
 	 *       /   \
@@ -135,11 +135,11 @@ void test_1(void)
 	 *                \
 	 *                 13
 	 */
-	assert(4 == avltree_height(tree));
-	assert(9 == *(int *) avltree_iter_data(avltree_root(tree)));
+	assert(4 == tds_avltree_height(tree));
+	assert(9 == *(int *) tds_avltreeiter_data(tds_avltree_root(tree)));
 
 	data = 7;
-	avltree_delete(tree, &data, cmp_int);
+	tds_avltree_delete(tree, &data, cmp_int);
 	/*
 	 *          9                  11
 	 *         / \       =>       /  \
@@ -149,42 +149,42 @@ void test_1(void)
 	 *                \
 	 *                13
 	 */
-	assert(3 == avltree_height(tree));
-	assert(11 == *(int *) avltree_iter_data(avltree_root(tree)));
-	assert(9 == *(int *) avltree_iter_data(__avltree_iter_leftchild(avltree_root(tree))));
-	assert(12 == *(int *) avltree_iter_data(__avltree_iter_rightchild(avltree_root(tree))));
+	assert(3 == tds_avltree_height(tree));
+	assert(11 == *(int *) tds_avltreeiter_data(tds_avltree_root(tree)));
+	assert(9 == *(int *) tds_avltreeiter_data(tds_avltreeiter_leftchild(tds_avltree_root(tree))));
+	assert(12 == *(int *) tds_avltreeiter_data(tds_avltreeiter_rightchild(tds_avltree_root(tree))));
 
 	/* test free */
-	avltree_free(tree);
+	tds_avltree_free(tree);
 }
 
 void test_2(void)
 {
-	avltree *tree = avltree_create(sizeof(int));
-	avltree_iter *iter = NULL;
+	tds_avltree *tree = tds_avltree_create(sizeof(int));
+	tds_avltreeiter *iter = NULL;
 	int data = 0;
 	int __n = 100000;
 
 	for(data = 0; data < __n; data++) {
-		avltree_insert(tree, &data, cmp_int);
+		tds_avltree_insert(tree, &data, cmp_int);
 	}
-	printf("height = %i\n", avltree_height(tree));
-	printf("root = %i\n", *(int *) avltree_iter_data(avltree_root(tree)));
+	printf("height = %i\n", tds_avltree_height(tree));
+	printf("root = %i\n", *(int *) tds_avltreeiter_data(tds_avltree_root(tree)));
 
 	/* test iteration */
 	data = 0;
-	iter = avltree_iter_front(tree);
+	iter = tds_avltreeiter_front(tree);
 	while (NULL != iter) {
-		assert(data == *(int *) avltree_iter_data(iter));
-		iter = avltree_iter_next(iter);
+		assert(data == *(int *) tds_avltreeiter_data(iter));
+		iter = tds_avltreeiter_next(iter);
 		data++;
 	}
 
 	/* search */
 	data = 8241;
-	assert(data == *(int *)avltree_get(tree, &data, cmp_int));
+	assert(data == *(int *)tds_avltree_get(tree, &data, cmp_int));
 
-	avltree_free(tree);
+	tds_avltree_free(tree);
 }
 
 int main(void)

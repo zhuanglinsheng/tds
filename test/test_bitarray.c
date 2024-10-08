@@ -41,7 +41,7 @@ void test_2(void)
 	tds_bitarray *arr = tds_bitarray_force_create(3);
 	size_t idx = 0;
 
-	tds_bitarray_force_resize(arr, 100);
+	tds_bitarray_force_resize(&arr, 100);
 
 	for (idx = 0; idx < tds_bitarray_capacity(arr); idx++) {
 		int b = idx % 2;

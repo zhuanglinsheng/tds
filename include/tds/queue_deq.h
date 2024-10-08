@@ -12,14 +12,15 @@ extern "C" {
 #endif
 
 /******************************************************************************
- * Deque based Queue
+ * Queue (Deque based)
  *
- *
+ * Queue is a linear data structure that follows the First-In-First-Out (FIFO)
+ * principle
  *****************************************************************************/
 
 typedef struct tds_queue_deq  tds_queue_deq;
 
-tds_queue_deq *tds_queue_deq_create_gen(size_t elesize, size_t capacity);
+tds_queue_deq *tds_queue_deq_create_g(size_t elesize, size_t capacity);
 tds_queue_deq *tds_queue_deq_create(size_t elesize);
 tds_queue_deq *tds_queue_deq_force_create(size_t elesize);
 tds_queue_deq *tds_queue_deq_free(tds_queue_deq *q);
