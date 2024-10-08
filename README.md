@@ -22,7 +22,7 @@ This is a general-purpose data structure library implemented in the pure ISO C90
    - [ ] [rbtree.h](./include/tds/rbtree.h)
    - [ ] ...
 
-## Sort
+## Algorithms
 
    - [ ] [sort.h](./include/ta/sort.h)
 
