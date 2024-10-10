@@ -17,6 +17,7 @@ struct tds_array {
 
 #define __array_basic_size  sizeof(tds_array)
 
+
 tds_array *tds_array_create(size_t elesize, size_t capacity)
 {
 	tds_array *arr = NULL;

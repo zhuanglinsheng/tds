@@ -31,6 +31,10 @@ struct tds_linkedlist {
 };
 
 
+/******************************************************************************
+ * Part 1. Node related
+ ******************************************************************************/
+
 /* On success, return a linked list node whose pointer to `data` is valid
  * On failure, return `NULL` pointer
  */
@@ -50,6 +54,10 @@ void *__linkedlist_node_data(const struct tds_linkedlist_node *node)
 	return ((char *) node) + __linkedlist_node_basic_size;
 }
 
+
+/******************************************************************************
+ * Part 2. Buffer related
+ ******************************************************************************/
 
 /* If there is space, then store node to buffer
  * Otherwise, free the node
@@ -84,6 +92,10 @@ struct tds_linkedlist_node *__get_linkedlist_node_for_appending(tds_linkedlist *
 	return node;
 }
 
+
+/******************************************************************************
+ * Part 3. List creation & free
+ ******************************************************************************/
 
 tds_linkedlist *tds_linkedlist_create_g(size_t elesize, size_t buffer_limit)
 {
@@ -153,6 +165,10 @@ void tds_linkedlist_free(tds_linkedlist *list)
 }
 
 
+/******************************************************************************
+ * Part 4. Statistics
+ ******************************************************************************/
+
 size_t tds_linkedlist_len(const tds_linkedlist *list)
 {
 	return list->__len;
@@ -173,6 +189,10 @@ size_t tds_linkedlist_bufferlen(const tds_linkedlist *list)
 	return len;
 }
 
+
+/******************************************************************************
+ * Part 5. Iteration
+ ******************************************************************************/
 
 tds_linkedlistiter *tds_linkedlistiter_head(const tds_linkedlist *list)
 {
@@ -198,6 +218,11 @@ void *tds_linkedlistiter_data(const tds_linkedlistiter *iter)
 {
 	return __linkedlist_node_data(iter);
 }
+
+
+/******************************************************************************
+ * Part 6. Change List
+ ******************************************************************************/
 
 int tds_linkedlist_pushfront(tds_linkedlist *list, void *data)
 {

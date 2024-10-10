@@ -4,13 +4,15 @@
  */
 #include <tds/deque.h>
 #include <tds/linkedlist.h>
-#include <tds/bitarray.h>
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+
+#define __tds_dequq_default_blk_capacity  8
+#define __tds_dequq_default_buffer_limit  8
 
 struct tds_deque_blk {
 	size_t __head_loc;
@@ -19,6 +21,18 @@ struct tds_deque_blk {
 };
 
 #define __blk_basic_size  sizeof(struct tds_deque_blk)
+
+struct tds_deque {
+	tds_linkedlist *__blk_list;  /* created by linkedlist construction fn, containing blk pointers */
+
+	size_t __blk_capacity;  /* the capacity of each block */
+	size_t __elesize;
+};
+
+/******************************************************************************
+ * Part 1: Block related
+ *
+ *****************************************************************************/
 
 struct tds_deque_blk *__blk_create(size_t elesize, size_t blk_capacity, int front_aligned)
 {
@@ -91,16 +105,10 @@ void *__blk_pop_back(struct tds_deque_blk *blk, size_t elesize)
 }
 
 
-#define __tds_dequq_default_blk_capacity  8
-#define __tds_dequq_default_buffer_limit  8
-
-struct tds_deque {
-	tds_linkedlist *__blk_list;  /* created by linkedlist construction fn, containing blk pointers */
-	tds_bitarray *__blk_aligned;
-
-	size_t __blk_capacity;  /* the capacity of each block */
-	size_t __elesize;
-};
+/******************************************************************************
+ * Part 2: Deque related
+ *
+ *****************************************************************************/
 
 tds_deque *tds_deque_create_g(size_t elesize, size_t blk_capacity, size_t buffer_lim)
 {

@@ -15,14 +15,32 @@
 #define __thashtbl_load_threshold  0.75
 #define __thashtbl_default_base    367
 
+struct tds_hashtbl {
+	tds_bitarray *__mark_delete;  /* created by bitarray construction function */
+	tds_array *__pairs;           /* created by array construction function */
+	size_t __keysize;
+	size_t __usage;
+};
+
+
+/******************************************************************************
+ * Part 1. Hash related
+ ******************************************************************************/
+
 /* Core Hash algorithm
  */
-uint64_t __tds_hashtbl_code_fn(const void *key, size_t keysize, uint64_t base);
+uint64_t __tds_hashtbl_code_fn(const void *key, size_t keysize, uint64_t base)
+{
+	uint64_t code = 0;  /* hash code */
+	size_t i;
+	char *p = (char *) key;
 
-/* Check the load factor and try to expand Hash-table
- * Return a bool indicating the success
- */
-int __tds_hashtbl_try_expand(tds_hashtbl *tbl);
+	for (i = 0; i < keysize; i++) {
+		code += (p[i] + 1);
+		code *= base;
+	}
+	return code;
+}
 
 /* Test results of 100,000,000 key-value pairs, counting the total conflictions
  *
@@ -125,13 +143,6 @@ int __tds_hashtbl_try_expand(tds_hashtbl *tbl);
  * | 509  |    304,624 |   1,586,846 |              |
  */
 
-struct tds_hashtbl {
-	tds_bitarray *__mark_delete;  /* created by bitarray construction function */
-	tds_array *__keys;            /* created by array construction function */
-	tds_array *__values;          /* created by array construction function */
-	size_t __usage;
-};
-
 #ifdef __tds_debug
 size_t __n_conflicts = 0;
 
@@ -146,69 +157,130 @@ void __tds_hashtbl_reset_n_conflicts(tds_hashtbl *tbl)
 }
 #endif
 
-tds_hashtbl *tds_hashtbl_create_g(size_t key_size, size_t value_size, size_t init_capacity)
-{
-	tds_hashtbl *tbl = (tds_hashtbl *) malloc(sizeof(tds_hashtbl));
-	size_t capacity = __thashtbl_init_capacity;
 
+/******************************************************************************
+ * Part 2. Creation, Resize & Free
+ ******************************************************************************/
+
+tds_hashtbl *tds_hashtbl_create_g(size_t pairsize, size_t keysize, size_t init_capacity)
+{
+	size_t capacity = __thashtbl_init_capacity;
+	tds_hashtbl *tbl = NULL;
+	assert(keysize <= pairsize);
 	while (capacity < init_capacity)
 		capacity *= 2;
-	if (NULL == tbl) {
+	if (NULL == (tbl = (tds_hashtbl *) malloc(sizeof(tds_hashtbl)))) {
 		printf("Error ... tds_hashtbl_create_g\n");
 		return NULL;
 	}
-	if (NULL == (tbl->__keys = tds_array_create(key_size, capacity))) {
-		free(tbl);
-		printf("Error ... tds_hashtbl_create_g\n");
-		return NULL;
-	}
-	if (NULL == (tbl->__values = tds_array_create(value_size, capacity))) {
-		free(tbl->__keys);
+	if (NULL == (tbl->__pairs = tds_array_create(pairsize, capacity))) {
 		free(tbl);
 		printf("Error ... tds_hashtbl_create_g\n");
 		return NULL;
 	}
 	if (NULL == (tbl->__mark_delete = tds_bitarray_create(capacity))) {
-		free(tbl->__keys);
-		free(tbl->__values);
+		tds_array_free(tbl->__pairs);
 		free(tbl);
 		printf("Error ... tds_hashtbl_create_g\n");
 		return NULL;
 	}
+	tbl->__keysize = keysize;
 	tbl->__usage = 0;
 	return tbl;
 }
 
-tds_hashtbl *tds_hashtbl_create(size_t key_size, size_t value_size)
+tds_hashtbl *tds_hashtbl_create(size_t pairsize, size_t keysize)
 {
-	return tds_hashtbl_create_g(key_size, value_size, __thashtbl_init_capacity);
+	return tds_hashtbl_create_g(pairsize, keysize, __thashtbl_init_capacity);
 }
 
-tds_hashtbl *tds_hashtbl_force_create_g(size_t key_size, size_t value_size, size_t init_capacity)
+tds_hashtbl *tds_hashtbl_force_create_g(size_t pairsize, size_t keysize, size_t init_capacity)
 {
-	tds_hashtbl *tbl = tds_hashtbl_create_g(key_size, value_size, init_capacity);
+	tds_hashtbl *tbl = NULL;
 
-	if (NULL == tbl) {
+	if (NULL == (tbl = tds_hashtbl_create_g(pairsize, keysize, init_capacity))) {
 		printf("Error ... tds_hashtbl_force_create_g\n");
 		exit(-1);
 	}
 	return tbl;
 }
 
-tds_hashtbl *tds_hashtbl_force_create(size_t key_size, size_t value_size)
+tds_hashtbl *tds_hashtbl_force_create(size_t pairsize, size_t keysize)
 {
-	return tds_hashtbl_force_create_g(key_size, value_size, __thashtbl_init_capacity);
+	return tds_hashtbl_force_create_g(pairsize, keysize, __thashtbl_init_capacity);
+}
+
+static int __is_empty(const tds_hashtbl *tbl, size_t loc)
+{
+	size_t idx = 0;
+	size_t keysize = tds_array_elesize(tbl->__pairs);
+	unsigned char *pair = (unsigned char *) tds_array_get(tbl->__pairs, loc);
+
+	for (idx = 0; idx < keysize; idx++) {
+		if (pair[idx] != 0)
+			return 0;
+	}
+	return 1;
+}
+
+int __tds_hashtbl_try_expand(tds_hashtbl *tbl)
+{
+	size_t pairsize = 0;
+	size_t new_capacity = 0;
+	size_t idx = 0;
+	tds_bitarray *new_delete_marker = NULL;
+	tds_array *new_pairs = NULL;
+	tds_hashtbl new_table;
+
+	assert(NULL != tbl);
+
+	if (tds_hashtbl_load_factor(tbl) < __thashtbl_load_threshold)
+		return 1;  /* success, no need to resize */
+	pairsize = tds_array_elesize(tbl->__pairs);
+	new_capacity = 2 * tds_hashtbl_capacity(tbl);
+
+	if (NULL == (new_delete_marker = tds_bitarray_create(new_capacity))) {
+		printf("Error .. __tds_hashtbl_try_expand\n");
+		return 0;
+	}
+	if (NULL == (new_pairs = tds_array_create(pairsize, new_capacity))) {
+		printf("Error .. __tds_hashtbl_try_expand\n");
+		return 0;
+	}
+	tds_bitarray_init(new_delete_marker, 0);
+	new_table.__pairs = new_pairs;
+	new_table.__mark_delete = new_delete_marker;
+	new_table.__keysize = tbl->__keysize;
+	new_table.__usage = 0;
+
+	/* searching old hashtable, rehash keys */
+	for (idx = 0; idx < tds_hashtbl_capacity(tbl); idx++) {
+		if (__is_empty(tbl, idx))  /* not used */
+			continue;
+		if (tds_bitarray_get(tbl->__mark_delete, idx))  /* deleted */
+			continue;
+		tds_hashtbl_set(&new_table, tds_array_get(tbl->__pairs, idx));
+	}
+	tds_array_free(tbl->__pairs);
+	tds_bitarray_free(tbl->__mark_delete);
+
+	tbl->__pairs = new_pairs;
+	tbl->__mark_delete = new_delete_marker;
+	return 1;
 }
 
 void tds_hashtbl_free(tds_hashtbl *tbl)
 {
 	assert(NULL != tbl);
-
 	tds_bitarray_free(tbl->__mark_delete);
-	tds_array_free(tbl->__keys);
-	tds_array_free(tbl->__values);
+	tds_array_free(tbl->__pairs);
 	free(tbl);
 }
+
+
+/******************************************************************************
+ * Part 3. Statistics
+ ******************************************************************************/
 
 size_t tds_hashtbl_usage(const tds_hashtbl *tbl)
 {
@@ -219,7 +291,7 @@ size_t tds_hashtbl_usage(const tds_hashtbl *tbl)
 size_t tds_hashtbl_capacity(const tds_hashtbl *tbl)
 {
 	assert(NULL != tbl);
-	return tds_array_capacity(tbl->__keys);
+	return tds_array_capacity(tbl->__pairs);
 }
 
 double tds_hashtbl_load_factor(const tds_hashtbl *tbl)
@@ -228,110 +300,37 @@ double tds_hashtbl_load_factor(const tds_hashtbl *tbl)
 	return ((double) tds_hashtbl_usage(tbl)) / ((double) tds_hashtbl_capacity(tbl));
 }
 
-int tds_hashtbl_contains(const tds_hashtbl *tbl, const void *key, size_t *loc)
-{
-	int occupied = 0;
-	*loc = __tds_hashtbl_getloc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
-
-	if (!occupied)
-		return 0;
-	if (tds_bitarray_get(tbl->__mark_delete, *loc))
-		return 0;
-	return 1;
-}
-
-void *tds_hashtbl_get(const tds_hashtbl *tbl, const void *key)
-{
-	int occupied = 0;
-	size_t loc = __tds_hashtbl_getloc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
-
-	if (!occupied)  /* the location is free */
-		return NULL;
-	if (tds_bitarray_get(tbl->__mark_delete, loc))  /* the location has been deleted */
-		return NULL;
-	return tds_array_get(tbl->__values, loc);
-}
-
-int tds_hashtbl_set(tds_hashtbl *tbl, const void *key, const void *value)
-{
-	int occupied = 0;
-	size_t loc = __tds_hashtbl_getloc(tbl, key, tds_hashtbl_capacity(tbl), &occupied);
-
-	if (!occupied)  /* the location is originally free */
-		tbl->__usage++;
-	tds_array_set(tbl->__keys, loc, key);
-	tds_array_set(tbl->__values, loc, value);
-
-	if(!__tds_hashtbl_try_expand(tbl)) {
-		printf("Error ... tds_hashtbl_set\n");
-		return 0;  /* failure */
-	}
-	return 1;  /* success */
-}
-
-void tds_hashtbl_force_set(tds_hashtbl *tbl, const void *key, const void *value)
-{
-	if (!tds_hashtbl_set(tbl, key, value)) {
-		printf("Error ... tds_hashtbl_force_set\n");
-		exit(-1);
-	}
-}
-
-int tds_hashtbl_rm(tds_hashtbl *tbl, const void *key)
-{
-	size_t loc = 0;
-
-	if (!tds_hashtbl_contains(tbl, key, &loc))
-		return 0;
-	tds_bitarray_set(tbl->__mark_delete, loc, 1);
-	return 1;
-}
 
 /******************************************************************************
- * Hash related
+ * Part 4. Search, Get, Set and Delete
  ******************************************************************************/
 
-uint64_t __tds_hashtbl_code_fn(const void *key, size_t keysize, uint64_t base)
+/* Return
+ * 	location `loc` that is either free or used
+ * 	state = 0 if loc is free
+ * 	state = 1 if loc is used
+ */
+size_t __tds_hashtbl_getloc( \
+	const tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state)
 {
-	uint64_t code = 0;  /* hash code */
-	size_t i;
-	char *p = (char *) key;
-
-	for (i = 0; i<keysize; i++) {
-		code += (p[i] + 1);
-		code *= base;
-	}
-	return code;
-}
-
-static int __is_key_empty(const tds_hashtbl *tbl, size_t loc)
-{
-	size_t idx = 0;
-	size_t keysize = tds_array_elesize(tbl->__keys);
-	unsigned char *key = (unsigned char *) tds_array_get(tbl->__keys, loc);
-
-	for (idx = 0; idx < keysize; idx++) {
-		if (key[idx] != 0)
-			return 0;
-	}
-	return 1;
-}
-
-size_t __tds_hashtbl_getloc(const tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state)
-{
-	size_t key_size = tds_array_elesize(tbl->__keys);
-	size_t code = __tds_hashtbl_code_fn(key, key_size, __thashtbl_default_base);
 	long explorer_1 = 0;
 	long explorer_2 = 1;
-	size_t loc = code % _new_capacity;
+	size_t keysize = 0, code = 0, loc = 0;
+	assert(NULL != tbl);
+	assert(NULL != key);
+	assert(NULL != state);
+	assert(_new_capacity >= tds_array_capacity(tbl->__pairs));
+	keysize = tbl->__keysize;
+	code = __tds_hashtbl_code_fn(key, keysize, __thashtbl_default_base);
+	loc = code % _new_capacity;
 SEARCH:
 	loc = (code + explorer_1 * explorer_1 * explorer_2) % _new_capacity;
 
-	if (__is_key_empty(tbl, loc)) {
-		*state = 0;  /* loc is free */
+	if (__is_empty(tbl, loc)) {
+		*state = 0;  /* loc is free for storage */
 		return loc;
-	} else if (0 == memcmp(key, tds_array_get(tbl->__keys, loc), key_size)) {
-		*state = 1;  /* loc is key */
+	} else if (0 == memcmp(key, tds_array_get(tbl->__pairs, loc), keysize)) {
+		*state = 1;  /* loc is used */
 		return loc;
 	} else {
 		if (explorer_2 > 0)
@@ -344,58 +343,60 @@ SEARCH:
 	}
 }
 
-int __tds_hashtbl_try_expand(tds_hashtbl *tbl)
+int tds_hashtbl_contains(const tds_hashtbl *tbl, const void *key, size_t *loc)
 {
-	size_t key_size;
-	size_t value_size;
-	size_t new_capacity;
-	size_t idx;
-	tds_bitarray *new_delete_marker = NULL;
-	tds_array *new_keys = NULL;
-	tds_array *new_values = NULL;
-	tds_hashtbl new_table;
-
-	assert(NULL != tbl);
-
-	if (tds_hashtbl_load_factor(tbl) < __thashtbl_load_threshold)
-		return 1;  /* success */
-	key_size = tds_array_elesize(tbl->__keys);
-	value_size = tds_array_elesize(tbl->__values);
-	new_capacity = 2 * tds_hashtbl_capacity(tbl);
-
-	if (NULL == (new_delete_marker = tds_bitarray_create(new_capacity))) {
-		printf("Error .. __tds_hashtbl_try_expand\n");
+	size_t old_capacity = tds_hashtbl_capacity(tbl);
+	int occupied = 0;
+	*loc = __tds_hashtbl_getloc(tbl, key, old_capacity, &occupied);
+	if (!occupied)
 		return 0;
-	}
-	if (NULL == (new_keys = tds_array_create(key_size, new_capacity))) {
-		printf("Error .. __tds_hashtbl_try_expand\n");
+	if (tds_bitarray_get(tbl->__mark_delete, *loc))
 		return 0;
+	return 1;
+}
+
+void *tds_hashtbl_get(const tds_hashtbl *tbl, const void *key)
+{
+	size_t old_capacity = tds_hashtbl_capacity(tbl);
+	int occupied = 0;
+	size_t loc = __tds_hashtbl_getloc(tbl, key, old_capacity, &occupied);
+	if (!occupied)  /* the location is free */
+		return NULL;
+	if (tds_bitarray_get(tbl->__mark_delete, loc))  /* the location has been deleted */
+		return NULL;
+	return tds_array_get(tbl->__pairs, loc);
+}
+
+int tds_hashtbl_set(tds_hashtbl *tbl, const void *pair)
+{
+	size_t old_capacity = tds_hashtbl_capacity(tbl);
+	int occupied = 0;
+	size_t loc = __tds_hashtbl_getloc(tbl, pair, old_capacity, &occupied);
+	if (!occupied)  /* the location is originally avaliable */
+		tbl->__usage++;
+	tds_array_set(tbl->__pairs, loc, pair);
+
+	if(!__tds_hashtbl_try_expand(tbl)) {
+		printf("Error ... tds_hashtbl_set\n");
+		return 0;  /* failure */
 	}
-	if (NULL == (new_values = tds_array_create(value_size, new_capacity))) {
-		printf("Error .. __tds_hashtbl_try_expand\n");
+	return 1;  /* success */
+}
+
+void tds_hashtbl_force_set(tds_hashtbl *tbl, const void *pair)
+{
+	if (!tds_hashtbl_set(tbl, pair)) {
+		printf("Error ... tds_hashtbl_force_set\n");
+		exit(-1);
+	}
+}
+
+int tds_hashtbl_rm(tds_hashtbl *tbl, const void *key)
+{
+	size_t loc = 0;
+
+	if (!tds_hashtbl_contains(tbl, key, &loc))
 		return 0;
-	}
-	new_table.__keys = new_keys;
-	new_table.__values = new_values;
-	tds_bitarray_init(new_delete_marker, 0);
-	new_table.__mark_delete = new_delete_marker;
-	new_table.__usage = 0;
-
-	/* searching old hashtable, rehash keys */
-	for (idx = 0; idx < tds_hashtbl_capacity(tbl); idx++) {
-		if (__is_key_empty(tbl, idx))  /* not used */
-			continue;
-		if (tds_bitarray_get(tbl->__mark_delete, idx))  /* deleted */
-			continue;
-		tds_hashtbl_set(&new_table, \
-			tds_array_get(tbl->__keys, idx), tds_array_get(tbl->__values, idx));
-	}
-	tds_array_free(tbl->__keys);
-	tds_array_free(tbl->__values);
-	tds_bitarray_free(tbl->__mark_delete);
-
-	tbl->__keys = new_keys;
-	tbl->__values = new_values;
-	tbl->__mark_delete = new_delete_marker;
+	tds_bitarray_set(tbl->__mark_delete, loc, 1);
 	return 1;
 }
