@@ -283,8 +283,7 @@ struct tds_avltreenode *__bintree_add_node_to( \
 /* Warning: the input `iter` must be `tree->__root_node`
  * Don't use this function any elsewhere!!!
  */
-void __bintree_clear( \
-	tds_avltree *tree, struct tds_avltreenode *iter, int force_buffer)
+void __bintree_clear(tds_avltree *tree, struct tds_avltreenode *iter, int force_buffer)
 {
 	if (NULL != iter) {
 		if (NULL == iter->__child_l && NULL == iter->__child_r)
@@ -303,6 +302,24 @@ void __bintree_clear( \
 	}
 }
 
+void __bintree_clear_fast(tds_avltree *tree, struct tds_avltreenode *iter)
+{
+	if (NULL != iter) {
+		if (NULL == iter->__child_l && NULL == iter->__child_r)
+			__node_free(iter);
+		else if (NULL != iter->__child_l && NULL == iter->__child_r) {
+			__bintree_clear_fast(tree, iter->__child_l);
+			__node_free(iter);
+		} else if (NULL == iter->__child_l && NULL != iter->__child_r) {
+			__bintree_clear_fast(tree, iter->__child_r);
+			__node_free(iter);
+		} else {
+			__bintree_clear_fast(tree, iter->__child_l);
+			__bintree_clear_fast(tree, iter->__child_r);
+			__node_free(iter);
+		}
+	}
+}
 
 /******************************************************************************
  * Part 3: AVL tree related operations
@@ -350,7 +367,7 @@ void tds_avltree_free_buffer(tds_avltree *tree)
 void tds_avltree_free(tds_avltree *tree)
 {
 	assert(NULL != tree);
-	__bintree_clear(tree, tree->__root_node, 0);
+	__bintree_clear_fast(tree, tree->__root_node);
 	tds_avltree_free_buffer(tree);
 	free(tree);
 }
