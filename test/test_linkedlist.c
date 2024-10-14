@@ -29,7 +29,7 @@ void test_0(void)
  * 	- tds_linkedlistiter_next
  * 	- tds_linkedlistiter_prev
  */
-void test_1(void)
+void test_worst(void)
 {
 	tds_linkedlist *list = tds_linkedlist_create(sizeof(long));
 	size_t num_tests = 10;
@@ -76,7 +76,7 @@ void test_1(void)
  * 	- tds_linkedlist_delete2
  * 	- tds_linkedlist_delete
  */
-void test_2(void)
+void test_best(void)
 {
 	size_t bufferlen = 100;
 	tds_linkedlist *list = tds_linkedlist_create_g(sizeof(long), bufferlen);
@@ -126,7 +126,7 @@ void test_2(void)
 int main(void)
 {
 	test_0();
-	test_1();
-	test_2();
+	test_worst();
+	test_best();
 	return 0;
 }

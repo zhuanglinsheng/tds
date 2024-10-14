@@ -14,7 +14,7 @@
  * 	- tds_deque_popfront
  * 	- tds_deque_popback
  */
-void test_1(void)
+void test_worst(void)
 {
 	tds_deque *q = tds_deque_force_create(sizeof(int));
 	int ele;
@@ -49,7 +49,7 @@ void test_1(void)
  * 	- tds_deque_get
  * 	- tds_deque_set
  */
-void test_2(void)
+void test_best(void)
 {
 	tds_deque *q = tds_deque_create_g(sizeof(size_t), 16, 8);
 	size_t idx = 0;
@@ -89,7 +89,7 @@ void test_2(void)
 
 int main(void)
 {
-	test_1();
-	test_2();
+	test_worst();
+	test_best();
 	return 0;
 }

@@ -44,24 +44,25 @@ set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 
 
 ###############################################################################
-# shared library
+# shared/static library
 ###############################################################################
 
 set(SOURCES
-	src/string.c
-	src/bitarray.c
-	src/array.c
-	src/linkedlist.c
-	src/arraylist.c
-	src/hashtbl.c
-	src/deque.c
-	src/stack_arr.c
-	src/avltree.c
+	src/tds_string.c
+	src/tds_bitarray.c
+	src/tds_array.c
+	src/tds_linkedlist.c
+	src/tds_arraylist.c
+	src/tds_hashtbl.c
+	src/tds_deque.c
+	src/tds_stack_arr.c
+	src/tds_avltree.c
+	src/ta_sort.c
 )
-add_library(tds SHARED
+add_library(tds_static STATIC
 	${SOURCES}
 )
-target_include_directories(tds PUBLIC
+target_include_directories(tds_static PUBLIC
 	${PROJECT_SOURCE_DIR}/include
 )
 
@@ -85,10 +86,10 @@ else()
 endif()
 
 if(USE_BLAS AND USE_LAPACK)
-	target_link_libraries(tds ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-	target_compile_definitions(tds PRIVATE USE_BLAS USE_LAPACK)
+	target_link_libraries(tds_static ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+	target_compile_definitions(tds_static PRIVATE USE_BLAS USE_LAPACK)
 else()
-	target_link_libraries(tds)
+	target_link_libraries(tds_static)
 endif()
 
 
@@ -96,7 +97,7 @@ endif()
 # Installation
 ###############################################################################
 
-install(TARGETS tds LIBRARY
+install(TARGETS tds_static LIBRARY
 	DESTINATION lib
 )
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/tds
@@ -113,7 +114,7 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/tds
 
 ## (Default) The "Release" mode is for installation.
 if (CMAKE_BUILD_TYPE AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
-	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wall -O2 -DNDEBUG")
+	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wall -O3 -DNDEBUG")
 ##
 ## The "Debug" mode is for unit testings.
 elseif (CMAKE_BUILD_TYPE AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))

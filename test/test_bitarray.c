@@ -10,7 +10,7 @@
  * 	- tds_bitarray_get
  * 	- tds_bitarray_free
  */
-void test_1(void)
+void test_worst(void)
 {
 	tds_bitarray *arr = tds_bitarray_force_create(3);
 
@@ -36,7 +36,7 @@ void test_1(void)
  * 	- tds_bitarray_get
  * 	- tds_bitarray_free
  */
-void test_2(void)
+void test_best(void)
 {
 	tds_bitarray *arr = tds_bitarray_force_create(3);
 	size_t idx = 0;
@@ -111,8 +111,8 @@ void test_3(void)
 
 int main(void)
 {
-	test_1();
-	test_2();
+	test_worst();
+	test_best();
 	test_3();
 	return 0;
 }

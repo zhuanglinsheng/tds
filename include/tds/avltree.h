@@ -6,6 +6,7 @@
 #define __T_AVLTREE_H__
 
 #include <stddef.h>
+#include <tds.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,15 +20,6 @@ extern "C" {
 
 typedef struct tds_avltree  tds_avltree;
 typedef struct tds_avltreenode  tds_avltreeiter;
-
-/* Comparing function
- *
- * Assumption:
- * 	- return  1 if a > b
- * 	- return  0 if a = b
- * 	- return -1 if a < b
- */
-typedef int __fn_cmp_t(void *_a, void *_b);
 
 tds_avltree *tds_avltree_create(size_t elesize);
 tds_avltree *tds_avltree_create_g(size_t elesize, size_t bufferlim);
@@ -51,11 +43,11 @@ tds_avltreeiter *tds_avltree_root(const tds_avltree *tree);
 tds_avltreeiter *tds_avltreeiter_leftchild(const tds_avltreeiter *iter);
 tds_avltreeiter *tds_avltreeiter_rightchild(const tds_avltreeiter *iter);
 
-int tds_avltree_insert(tds_avltree *tree, void *ele, __fn_cmp_t _f);
-int tds_avltree_delete(tds_avltree *tree, void *key, __fn_cmp_t _f);
+int tds_avltree_insert(tds_avltree *tree, void *ele, tds_fcmp_t _f);
+int tds_avltree_delete(tds_avltree *tree, void *key, tds_fcmp_t _f);
 
-void *tds_avltree_get(const tds_avltree *tree, void *key, __fn_cmp_t _f);
-tds_avltreeiter *tds_avltree_getiter(const tds_avltree *tree, void *key, __fn_cmp_t _f);
+void *tds_avltree_get(const tds_avltree *tree, void *key, tds_fcmp_t _f);
+tds_avltreeiter *tds_avltree_getiter(const tds_avltree *tree, void *key, tds_fcmp_t _f);
 
 #ifdef __cplusplus
 }

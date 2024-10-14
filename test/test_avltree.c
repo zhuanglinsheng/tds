@@ -17,7 +17,7 @@ int cmp_int(void *a, void *b)
 		return -1;
 }
 
-void test_1(void)
+void test_worst(void)
 {
 	/* Creation
 	 */
@@ -158,7 +158,7 @@ void test_1(void)
 	tds_avltree_free(tree);
 }
 
-void test_2(void)
+void test_best(void)
 {
 	tds_avltree *tree = tds_avltree_create(sizeof(int));
 	tds_avltreeiter *iter = NULL;
@@ -189,7 +189,7 @@ void test_2(void)
 
 int main(void)
 {
-	test_1();
-	test_2();
+	test_worst();
+	test_best();
 	return 0;
 }
