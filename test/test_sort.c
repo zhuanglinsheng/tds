@@ -72,6 +72,8 @@ int main(void)
 	test_best(ta_sort_insert, arr_buffer);
 
 	/* test bubble sorting */
+	test_worst(ta_sort_bubble, arr_buffer);
+	test_best(ta_sort_bubble, arr_buffer);
 
 	return 0;
 }

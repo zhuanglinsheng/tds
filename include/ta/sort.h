@@ -18,14 +18,14 @@ extern "C" {
  *
  *****************************************************************************/
 
-#define __tds_elesize_limit  1024
+#define __tds_sort_elesize_limit  1024
 
-/* A general type of sorting functions
+/* A general type of the sorting functions
  */
-typedef int ta_fsort_t(void *, size_t, size_t, tds_fcmp_t, int);
+typedef void ta_fsort_t(void *, size_t, size_t, tds_fcmp_t, int);
 
-int ta_sort_insert(void *arr, size_t elesize, size_t len, tds_fcmp_t f, int ascend);
-int ta_sort_bubble(void *arr, size_t elesize, size_t len, tds_fcmp_t f, int ascend);
+void ta_sort_insert(void *arr, size_t elesize, size_t len, tds_fcmp_t f, int ascend);
+void ta_sort_bubble(void *arr, size_t elesize, size_t len, tds_fcmp_t f, int ascend);
 
 
 #ifdef __cplusplus
