@@ -87,7 +87,7 @@ void test_heapify(int *arr, int inc)
 	}
 	ta_heapify(arr, sizeof(int), n, inc, cmp_int, 1);
 	for (idx = 0; idx < n; idx += inc) {
-		printf("<test_heapify> arr[%i] = %i\n", idx + 1, arr[idx]);
+		printf("<test_heapify> arr[%i] = %i\n", idx + inc, arr[idx]);
 		/* assert(arr[idx] == idx); */
 	}
 }
