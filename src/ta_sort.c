@@ -6,13 +6,6 @@
 #include <string.h>
 #include <limits.h>
 
-void ta_sort(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _f, int ascend)
-{
-	assert(NULL != arr);
-	assert(elesize < __tds_sort_elesize_limit);
-	assert(inc > 0);
-}
-
 static void __swap(void *_a, void *_b, void * _tmp, size_t elesize)
 {
 	memcpy(_tmp, _b, elesize);
@@ -30,8 +23,10 @@ void ta_sort_bubble(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _
 	void *ele_i_next = NULL;
 
 	assert(NULL != arr);
+	assert(NULL != _f);
 	assert(elesize < __tds_sort_elesize_limit);
 	assert(inc > 0);
+	assert(ascend == 0 || ascend == 1);
 
 	for (idx_sorted = 0; idx_sorted < len; idx_sorted += inc) {
 		int is_swapped = 0;
@@ -55,17 +50,17 @@ void ta_sort_select(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _
 	size_t idx_sorted = 0;
 	size_t idx_i = 0;
 	size_t idx_select = 0;
-	/* select the smallest if `ascend = 1`
-	 * select the largest if `ascend = 0`
-	 */
+	/* select the smallest if `ascend = 1` and the largest if `ascend = 0` */
 	char *p = (char *) arr;
 	char _tmp[__tds_sort_elesize_limit];
 	void *ele_i = NULL;
 	void *ele_select = NULL;
 
 	assert(NULL != arr);
+	assert(NULL != _f);
 	assert(elesize < __tds_sort_elesize_limit);
 	assert(inc > 0);
+	assert(ascend == 0 || ascend == 1);
 
 	for (idx_sorted = 0; idx_sorted < len; idx_sorted += inc) {
 		idx_select = idx_sorted;
@@ -97,8 +92,10 @@ void ta_sort_insert(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _
 	void *ele_j = NULL;
 
 	assert(NULL != arr);
+	assert(NULL != _f);
 	assert(elesize < __tds_sort_elesize_limit);
 	assert(inc > 0);
+	assert(ascend == 0 || ascend == 1);
 
 	for (idx_j = inc; idx_j < len; idx_j += inc) {
 		int _tmp_is_asged = 0;
@@ -136,8 +133,10 @@ void ta_sort_shell(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _f
 	char *p = (char *) arr;
 
 	assert(NULL != arr);
+	assert(NULL != _f);
 	assert(elesize < __tds_sort_elesize_limit);
 	assert(inc > 0);
+	assert(ascend == 0 || ascend == 1);
 
 	while (n_skip * 2 < INT_MAX && n_skip < len / 4)
 		n_skip *= 2;
@@ -152,7 +151,7 @@ void ta_sort_shell(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _f
 	ta_sort_insert(arr, elesize, len, inc, _f, ascend);
 }
 
-void __sort_merge(void *arr, void *arr_1, void *arr_2, size_t len_1, size_t len_2, \
+void __sort_merge(char *arr, char *arr_1, char *arr_2, size_t len_1, size_t len_2, \
 		int inc, size_t elesize, tds_fcmp_t _f, int ascend)
 {
 	size_t idx_merged = 0;
@@ -206,8 +205,10 @@ void ta_sort_merge(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _f
 	char *p = (char *) arr;
 
 	assert(NULL != arr);
+	assert(NULL != _f);
 	assert(elesize < __tds_sort_elesize_limit);
 	assert(inc > 0);
+	assert(ascend == 0 || ascend == 1);
 
 	if (NULL == (buffer = (char *) malloc(total_size))) {
 		printf("Error .. ta_sort_merge\n");
@@ -244,8 +245,10 @@ void ta_sort_quick(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _f
 	static char pivot[__tds_sort_elesize_limit];
 
 	assert(NULL != arr);
+	assert(NULL != _f);
 	assert(elesize < __tds_sort_elesize_limit);
 	assert(inc > 0);
+	assert(ascend == 0 || ascend == 1);
 
 	if (len <= inc)
 		return;
@@ -308,6 +311,112 @@ Quick_Sort_End:
 	}
 }
 
+/*
+ * Note:
+ * 	Here, the input `idx_node` is the root node to be heapified.
+ * 	Since heap is inc-indexed, so is the node.
+ */
+static void __heapify_node(char *p, char *buffer, size_t elesize, size_t idx_last_leaf, \
+		int inc, size_t idx_node, tds_fcmp_t _f, int ascend)
+{
+	size_t idx_child_l = 0;
+	size_t idx_child_r = 0;
+	size_t idx_picked_child = 0;
+	int pick_right = 0;
+	void *ele_child_l = NULL;
+	void *ele_child_r = NULL;
+	void *ele_picked_child = NULL;
+	void *ele_tmp_root = NULL;
+Loop:
+	ele_tmp_root = p + (idx_node - inc) * elesize;  /* inc-indexed! */
+
+	/* First step: pick the largest child node */
+	idx_child_l = idx_node * 2;
+	idx_child_r = idx_child_l + inc;
+	ele_child_l = p + (idx_child_l - inc) * elesize;  /* inc-indexed! */
+
+	if (idx_child_r <= idx_last_leaf) {
+	/* has left and right child */
+		ele_child_r = p + (idx_child_r - inc) * elesize;  /* inc-indexed! */
+		pick_right = (ascend && 1 == _f(ele_child_r, ele_child_l))
+			|| (!ascend && 1 == _f(ele_child_l, ele_child_r));
+	} else if (idx_child_l <= idx_last_leaf)
+	/* only has left child */
+		pick_right = 0;
+	else
+	/* is leaf */
+		return;
+	idx_picked_child = idx_child_l + pick_right * inc;
+	ele_picked_child = p + (idx_picked_child - inc) * elesize;  /* inc-indexed! */
+
+	/* Second step: compare & swap */
+	if ((ascend && 1 == _f(ele_picked_child, ele_tmp_root))
+	 || (!ascend && 1 == _f(ele_tmp_root, ele_picked_child))) {
+		__swap(ele_picked_child, ele_tmp_root, buffer, elesize);
+		idx_node = idx_picked_child;
+		goto Loop;
+	}
+}
+
+size_t __heap_idx_last_leaf(size_t len, int inc)
+{
+	return ((len + inc - 1) / inc) * inc;
+}
+
+size_t __heap_idx_last_root(size_t idx_last_leaf, int inc)
+{
+	return (idx_last_leaf / (2 * inc)) * inc;
+}
+
+size_t ta_heapify(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _f, int ascend)
+{
+	/* Note: heap is `inc` index, i.e., index of the first node is `inc`
+	 * Only `idx = k * inc` is in heap.
+	 */
+	size_t idx_last_leaf = 0;
+	size_t idx_last_root = 0;
+	static char _tmp[__tds_sort_elesize_limit];
+
+	assert(NULL != arr);
+	assert(NULL != _f);
+	assert(elesize < __tds_sort_elesize_limit);
+	assert(inc > 0);
+	assert(ascend == 0 || ascend == 1);
+
+	if (len < 1 + inc)  /* at least 2 nodes */
+		return 0;
+	idx_last_leaf = __heap_idx_last_leaf(len, inc);
+	idx_last_root = __heap_idx_last_root(idx_last_leaf, inc);
+
+	for (; idx_last_root > 0; idx_last_root -= inc)
+		__heapify_node(arr, _tmp, elesize, idx_last_leaf, \
+			inc, idx_last_root, _f, ascend);
+	return idx_last_leaf - inc;  /* inc-indexed! */
+}
+
 void ta_sort_heap(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _f, int ascend)
 {
+	char *p = (char *) arr;
+	char _tmp[__tds_sort_elesize_limit];
+	size_t idx_last_leaf = len;
+
+	assert(NULL != arr);
+	assert(NULL != _f);
+	assert(elesize < __tds_sort_elesize_limit);
+	assert(inc > 0);
+	assert(ascend == 0 || ascend == 1);
+
+	if (len < 1 + inc)  /* at least 2 nodes */
+		return;
+	idx_last_leaf = ta_heapify(arr, elesize, len, inc, _f, ascend);
+
+	while (len > inc) {
+		void * p_last_leaf = p + idx_last_leaf * elesize;
+		__swap(p, p_last_leaf, _tmp, elesize);
+		len -= inc;
+		idx_last_leaf = __heap_idx_last_leaf(len, inc);  /* inc-indexed */
+		/* heapify the head: inc is the index of head */
+		__heapify_node(arr, _tmp, elesize, idx_last_leaf, inc, inc, _f, ascend);
+		idx_last_leaf -= inc;  /* 0-indexed */
+	}
 }

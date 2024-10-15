@@ -37,7 +37,7 @@ The library is expected to include the following components:
 
 ## Algorithms
 
-   - [ ] [sort.h](./include/ta/sort.h),
+   - [x] [sort.h](./include/ta/sort.h),
          [ta_sort.c](./src/ta_sort.c),
          [test_sort.c](./test/test_sort.c)
 

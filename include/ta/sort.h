@@ -15,14 +15,7 @@ extern "C" {
 /******************************************************************************
  * Sorting Algorithms
  *
- * Including
- * 	- bubble
- * 	- quick
- * 	- insert
- * 	- shell
- * 	- select
- * 	- heap
- * 	- merge
+ * Including bubble, quick, insert, shell, select, heap and merge
  *****************************************************************************/
 
 #define __tds_sort_elesize_limit  1024
@@ -30,10 +23,6 @@ extern "C" {
 /* A general type of the sorting functions
  */
 typedef void ta_fsort_t(void *, size_t, size_t, int, tds_fcmp_t, int);
-
-/* Sort an array
- */
-void ta_sort(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _f, int ascend);
 
 /* Bubble Sort is the simplest sorting algorithm that works by repeatedly
  * swapping the adjacent elements if they are in the wrong order.
@@ -84,6 +73,14 @@ void ta_sort_shell(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _f
  * Space: O(1)
  */
 void ta_sort_select(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _f, int ascend);
+
+/* Reorder array to make it a heap
+ * Input:
+ * 	- `ascend = 1` means root is largest
+ * 	- `ascend = 0` means root is smallest
+ * Return: the index of the last element in heap
+ */
+size_t ta_heapify(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t _f, int ascend);
 
 /* Heap sort is a comparison-based sorting technique based on Binary Heap Data
  * Structure. It can be seen as an optimization over selection sort where we
