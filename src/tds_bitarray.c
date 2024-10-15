@@ -148,15 +148,15 @@ void tds_bitarray_set(tds_bitarray *arr, size_t loc, int b)
 
 tds_bitarray *tds_bitarray_and(const tds_bitarray *arr1, const tds_bitarray *arr2)
 {
-	tds_bitarray *new_arr = tds_bitarray_create(8 * arr1->__nbyte);
+	tds_bitarray *new_arr = NULL;
 	size_t idx;
 
 	assert(NULL != arr1);
 	assert(NULL != arr2);
 	assert(arr1->__nbyte == arr2->__nbyte);
 
-	if (NULL == new_arr)  /* create failure */
-		return NULL;
+	if (NULL == (new_arr = tds_bitarray_create(8 * arr1->__nbyte)))
+		return NULL;  /* create failure */
 	for (idx = 0; idx < arr1->__nbyte; idx++) {
 		uint8_t *p = (uint8_t *) tds_bitarray_data(new_arr);
 		uint8_t c1 = ((unsigned char *) tds_bitarray_data(arr1)) [idx];
@@ -169,15 +169,15 @@ tds_bitarray *tds_bitarray_and(const tds_bitarray *arr1, const tds_bitarray *arr
 
 tds_bitarray *tds_bitarray_or(const tds_bitarray *arr1, const tds_bitarray *arr2)
 {
-	tds_bitarray *new_arr = tds_bitarray_create(8 * arr1->__nbyte);
+	tds_bitarray *new_arr = NULL;
 	size_t idx;
 
 	assert(NULL != arr1);
 	assert(NULL != arr2);
 	assert(arr1->__nbyte == arr2->__nbyte);
 
-	if (NULL == new_arr)  /* create failure */
-		return NULL;
+	if (NULL == (new_arr = tds_bitarray_create(8 * arr1->__nbyte)))
+		return NULL;  /* create failure */
 	for (idx = 0; idx < arr1->__nbyte; idx++) {
 		uint8_t *p = (uint8_t *) tds_bitarray_data(new_arr);
 		uint8_t c1 = ((unsigned char *) tds_bitarray_data(arr1)) [idx];
@@ -190,15 +190,15 @@ tds_bitarray *tds_bitarray_or(const tds_bitarray *arr1, const tds_bitarray *arr2
 
 tds_bitarray *tds_bitarray_xor(const tds_bitarray *arr1, const tds_bitarray *arr2)
 {
-	tds_bitarray *new_arr = tds_bitarray_create(8 * arr1->__nbyte);
+	tds_bitarray *new_arr = NULL;
 	size_t idx;
 
 	assert(NULL != arr1);
 	assert(NULL != arr2);
 	assert(arr1->__nbyte == arr2->__nbyte);
 
-	if (NULL == new_arr)  /* create failure */
-		return NULL;
+	if (NULL == (new_arr = tds_bitarray_create(8 * arr1->__nbyte)))
+		return NULL;  /* create failure */
 	for (idx = 0; idx < arr1->__nbyte; idx++) {
 		uint8_t *p = (uint8_t *) tds_bitarray_data(new_arr);
 		uint8_t c1 = ((unsigned char *) tds_bitarray_data(arr1)) [idx];
@@ -211,13 +211,13 @@ tds_bitarray *tds_bitarray_xor(const tds_bitarray *arr1, const tds_bitarray *arr
 
 tds_bitarray *tds_bitarray_not(const tds_bitarray *arr)
 {
-	tds_bitarray *new_arr = tds_bitarray_create(8 * arr->__nbyte);
+	tds_bitarray *new_arr = NULL;
 	size_t idx;
 
 	assert(NULL != arr);
 
-	if (NULL == new_arr)  /* create failure */
-		return NULL;
+	if (NULL == (new_arr = tds_bitarray_create(8 * arr->__nbyte)))
+		return NULL;  /* create failure */
 	for (idx = 0; idx < arr->__nbyte; idx++) {
 		uint8_t *p = (uint8_t *) tds_bitarray_data(new_arr);
 		uint8_t c1 = ((unsigned char *) tds_bitarray_data(arr)) [idx];
@@ -234,6 +234,7 @@ int tds_bitarray_resize(tds_bitarray **arr, size_t new_capacity)
 	size_t new_total_size = 0;
 	assert(NULL != arr);
 	assert(NULL != *arr);
+
 	if (new_capacity <= 8 * (*arr)->__nbyte)
 		return 1;  /* success: no need to resize */
 	new_nbyte = (*arr)->__nbyte;

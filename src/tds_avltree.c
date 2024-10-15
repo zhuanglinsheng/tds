@@ -12,9 +12,6 @@
 #define __avltree_buffer_limit  ((size_t)-1)
 #define __avltreenode_basic_size  sizeof(struct tds_avltreenode)
 
-#define __avltree_ABS(a)  (((a) > 0) ? (a) : (-(a)))
-#define __avltree_MAX(a, b) (((a) > (b)) ? (a) : (b))
-
 struct tds_avltreenode {
 	struct tds_avltreenode *__father;
 	struct tds_avltreenode *__child_l;
@@ -109,7 +106,7 @@ void __node_update_height_upwardly(struct tds_avltreenode *node, int mode)
 		h_l = node->__child_l->__height;
 	if (NULL != node->__child_r)
 		h_r = node->__child_r->__height;
-	new_h = 1 + __avltree_MAX(h_l, h_r);
+	new_h = 1 + __tds_MAX(h_l, h_r);
 	node->__height = new_h;
 
 	if (NULL != node->__father

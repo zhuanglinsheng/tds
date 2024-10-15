@@ -18,6 +18,9 @@ extern "C" {
  */
 typedef int tds_fcmp_t(void *_a, void *_b);
 
+#define __tds_ABS(a)  (((a) > 0) ? (a) : (-(a)))
+#define __tds_MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define __tds_MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 #ifdef __cplusplus
 }
