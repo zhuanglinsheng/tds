@@ -311,12 +311,12 @@ Quick_Sort_End:
 	}
 }
 
-/*
+/* Heapify the node with at `idx_node`
  * Note:
  * 	Here, the input `idx_node` is the root node to be heapified.
  * 	Since heap is inc-indexed, so is the node.
  */
-static void __heapify_node(char *p, char *buffer, size_t elesize, size_t idx_last_leaf, \
+static void __heapify_node(char *arr, char *buffer, size_t elesize, size_t idx_last_leaf, \
 		int inc, size_t idx_node, tds_fcmp_t _f, int ascend)
 {
 	size_t idx_child_l = 0;
@@ -327,17 +327,18 @@ static void __heapify_node(char *p, char *buffer, size_t elesize, size_t idx_las
 	void *ele_child_r = NULL;
 	void *ele_picked_child = NULL;
 	void *ele_tmp_root = NULL;
-Loop:
-	ele_tmp_root = p + (idx_node - inc) * elesize;  /* inc-indexed! */
+
+Heapify_Loop_Downwardly:
+	ele_tmp_root = arr + (idx_node - inc) * elesize;  /* inc-indexed! */
 
 	/* First step: pick the largest child node */
 	idx_child_l = idx_node * 2;
 	idx_child_r = idx_child_l + inc;
-	ele_child_l = p + (idx_child_l - inc) * elesize;  /* inc-indexed! */
+	ele_child_l = arr + (idx_child_l - inc) * elesize;  /* inc-indexed! */
 
 	if (idx_child_r <= idx_last_leaf) {
 	/* has left and right child */
-		ele_child_r = p + (idx_child_r - inc) * elesize;  /* inc-indexed! */
+		ele_child_r = arr + (idx_child_r - inc) * elesize;  /* inc-indexed! */
 		pick_right = (ascend && 1 == _f(ele_child_r, ele_child_l))
 			|| (!ascend && 1 == _f(ele_child_l, ele_child_r));
 	} else if (idx_child_l <= idx_last_leaf)
@@ -347,14 +348,14 @@ Loop:
 	/* is leaf */
 		return;
 	idx_picked_child = idx_child_l + pick_right * inc;
-	ele_picked_child = p + (idx_picked_child - inc) * elesize;  /* inc-indexed! */
+	ele_picked_child = arr + (idx_picked_child - inc) * elesize;  /* inc-indexed! */
 
 	/* Second step: compare & swap */
 	if ((ascend && 1 == _f(ele_picked_child, ele_tmp_root))
 	 || (!ascend && 1 == _f(ele_tmp_root, ele_picked_child))) {
 		__swap(ele_picked_child, ele_tmp_root, buffer, elesize);
 		idx_node = idx_picked_child;
-		goto Loop;
+		goto Heapify_Loop_Downwardly;
 	}
 }
 
