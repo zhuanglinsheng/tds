@@ -43,7 +43,11 @@ The library is expected to include the following components:
 
 ## Compare with C++ STL
 
-...
+1. Compare `std::map` with `avltree`.
+
+    Based on my tests on Linux, `avltree` is slightly faster than `std::map` in searching but slower in deletion. 
+
+    See [cmp_avltree.cpp](./cmp/cmp_avltree.cpp). 
 
 ## Install
 
