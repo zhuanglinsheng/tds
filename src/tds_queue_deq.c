@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define __tds_queue_deq_init_len  8
+#define tds_queue_deq_init_len  8
 
 tds_queue_deq *tds_queue_deq_create_g(size_t elesize, size_t capacity)
 {
@@ -18,7 +18,7 @@ tds_queue_deq *tds_queue_deq_create_g(size_t elesize, size_t capacity)
 
 tds_queue_deq *tds_queue_deq_create(size_t elesize)
 {
-	return tds_queue_deq_create_g(elesize, __tds_queue_deq_init_len);
+	return tds_queue_deq_create_g(elesize, tds_queue_deq_init_len);
 }
 
 tds_queue_deq *tds_queue_deq_force_create(size_t elesize)

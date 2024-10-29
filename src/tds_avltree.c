@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define __avltree_buffer_limit  ((size_t)-1)
-#define __avltreenode_basic_size  sizeof(struct tds_avltreenode)
+#define tds_avltree_buffer_limit  ((size_t)-1)
+#define tds_avltreenode_basic_size  sizeof(struct tds_avltreenode)
 
 struct tds_avltreenode {
 	struct tds_avltreenode *__father;
@@ -44,13 +44,13 @@ struct tds_avltree {
 
 /* On failure, return a `NULL` pointer
  */
-struct tds_avltreenode *__node_create(size_t elesize)
+static struct tds_avltreenode *node_create(size_t elesize)
 {
-	size_t total_size = elesize + __avltreenode_basic_size;
+	size_t total_size = elesize + tds_avltreenode_basic_size;
 	struct tds_avltreenode *node = (struct tds_avltreenode *) malloc(total_size);
 
 	if (NULL == node) {
-		printf("Error ... __node_create\n");
+		printf("Error ... node_create\n");
 		return NULL;
 	}
 	node->__father = NULL;
@@ -60,20 +60,20 @@ struct tds_avltreenode *__node_create(size_t elesize)
 	return node;
 }
 
-void __node_free(struct tds_avltreenode *node)
+static void node_free(struct tds_avltreenode *node)
 {
 	free(node);
 }
 
-void *__node_data(const struct tds_avltreenode *node)
+static void *node_data(const struct tds_avltreenode *node)
 {
 	assert(NULL != node);
-	return ((char *) node) + __avltreenode_basic_size;
+	return ((char *) node) + tds_avltreenode_basic_size;
 }
 
 /* Defined as "height of right" - "height of left"
  */
-int __node_balace_factor(const struct tds_avltreenode *node)
+static int node_balace_factor(const struct tds_avltreenode *node)
 {
 	int depth_l = 0;
 	int depth_r = 0;
@@ -93,7 +93,7 @@ int __node_balace_factor(const struct tds_avltreenode *node)
  * 	- 1: lazy strategy
  * 	- 2: only update self
  */
-void __node_update_height_upwardly(struct tds_avltreenode *node, int mode)
+static void node_update_height_upwardly(struct tds_avltreenode *node, int mode)
 {
 	int h_l = 0;
 	int h_r = 0;
@@ -106,15 +106,15 @@ void __node_update_height_upwardly(struct tds_avltreenode *node, int mode)
 		h_l = node->__child_l->__height;
 	if (NULL != node->__child_r)
 		h_r = node->__child_r->__height;
-	new_h = 1 + __tds_MAX(h_l, h_r);
+	new_h = 1 + tds_MAX(h_l, h_r);
 	node->__height = new_h;
 
 	if (NULL != node->__father
 	&& ((0 == mode) || (1 == mode && old_h != new_h)))
-		__node_update_height_upwardly(node->__father, mode);
+		node_update_height_upwardly(node->__father, mode);
 }
 
-int __node_depth(const struct tds_avltreenode *node)
+static int node_depth(const struct tds_avltreenode *node)
 {
 	int depth = 0;
 	assert(NULL != node);
@@ -133,7 +133,7 @@ int __node_depth(const struct tds_avltreenode *node)
  * rotation (re-balancing) operations
  *****************************************************************************/
 
-struct tds_avltreenode *__buffer_pop(tds_avltree *tree)
+static struct tds_avltreenode *buffer_pop(tds_avltree *tree)
 {
 	struct tds_avltreenode *buffer_head = NULL;
 	assert(NULL != tree);
@@ -151,7 +151,7 @@ struct tds_avltreenode *__buffer_pop(tds_avltree *tree)
 /* Return a bool indicating success
  * If unsussessful, the `node` is unchanged
  */
-int __buffer_try_append( \
+static int buffer_try_append( \
 	tds_avltree *tree, struct tds_avltreenode *node, int force_buffer)
 {
 	assert(NULL != tree);
@@ -160,9 +160,9 @@ int __buffer_try_append( \
 
 	if (tree->__buffer_len == tree->__buffer_limit) {
 		if (force_buffer) {
-			struct tds_avltreenode *head = __buffer_pop(tree);
+			struct tds_avltreenode *head = buffer_pop(tree);
 			/* head is not `NULL` since `buffer_len` > 0 */
-			__node_free(head);
+			node_free(head);
 		} else
 			return 0;  /* failure */
 	}
@@ -180,7 +180,7 @@ int __buffer_try_append( \
  * Warning: we assume that `node` is in `tree`
  * Don't use this function any elsewhere!!!
  */
-struct tds_avltreenode *__binary_tree_rm_node( \
+static struct tds_avltreenode *binary_tree_rm_node( \
 	tds_avltree *tree, struct tds_avltreenode *node, int force_buffer)
 {
 	struct tds_avltreenode *c_l = NULL;
@@ -207,7 +207,7 @@ struct tds_avltreenode *__binary_tree_rm_node( \
 				father->__child_l = NULL;
 			else
 				father->__child_r = NULL;
-			__node_update_height_upwardly(father, 0);
+			node_update_height_upwardly(father, 0);
 		} else  /* the node is a single root without children */
 			tree->__root_node = NULL;
 	} else if (NULL != c_l && NULL == c_r) {
@@ -216,7 +216,7 @@ struct tds_avltreenode *__binary_tree_rm_node( \
 				father->__child_l = c_l;
 			else
 				father->__child_r = c_l;
-			__node_update_height_upwardly(node->__father, 0);
+			node_update_height_upwardly(node->__father, 0);
 		} else  /* the node is the root with a single left child */
 			tree->__root_node = c_l;
 		c_l->__father = father;
@@ -226,19 +226,19 @@ struct tds_avltreenode *__binary_tree_rm_node( \
 				father->__child_l = c_r;
 			else
 				father->__child_r = c_r;
-			__node_update_height_upwardly(node->__father, 0);
+			node_update_height_upwardly(node->__father, 0);
 		} else  /* the node is the root with a single right child */
 			tree->__root_node = c_r;
 		c_r->__father = father;
 	} else {
-		int select_prev = __node_depth(prev) > __node_depth(next);
+		int select_prev = node_depth(prev) > node_depth(next);
 		struct tds_avltreenode *selected = select_prev ? prev : next;
-		father = __binary_tree_rm_node(tree, selected, 1);
+		father = binary_tree_rm_node(tree, selected, 1);
 		/* NOTE: recursion
 		 * 	The `selected` is NOT being freed since it is buffered
 		 * 	Hence, its data is still reachable
 		 */
-		memcpy(__node_data(node),__node_data(selected), tree->__elesize);
+		memcpy(node_data(node),node_data(selected), tree->__elesize);
 		return father;
 	}
 	/* Adjust the tree statistics
@@ -247,8 +247,8 @@ struct tds_avltreenode *__binary_tree_rm_node( \
 	/*
 	 * Buffer or release the node
 	 */
-	if (0 == __buffer_try_append(tree, node, force_buffer)) {
-		__node_free(node);
+	if (0 == buffer_try_append(tree, node, force_buffer)) {
+		node_free(node);
 	}
 	return father;
 }
@@ -258,16 +258,16 @@ struct tds_avltreenode *__binary_tree_rm_node( \
  * Warning: we assume `father` is either `NULL` or in `tree`
  * Don't use this function any elsewhere!!!
  */
-struct tds_avltreenode *__bintree_add_node_to( \
+static struct tds_avltreenode *bintree_add_node_to( \
 	tds_avltree *tree, struct tds_avltreenode *father, int left)
 {
 	struct tds_avltreenode *the_node = NULL;
 	assert(NULL != tree);
 
 	if (tree->__buffer_len == 0)
-		the_node = __node_create(tree->__elesize);
+		the_node = node_create(tree->__elesize);
 	else  /* if there is node in buffer stack */
-		the_node = __buffer_pop(tree);
+		the_node = buffer_pop(tree);
 	if (NULL == the_node)
 		return NULL;
 	the_node->__father = father;
@@ -278,7 +278,7 @@ struct tds_avltreenode *__bintree_add_node_to( \
 			father->__child_l = the_node;
 		else
 			father->__child_r = the_node;
-		__node_update_height_upwardly(father, 1);
+		node_update_height_upwardly(father, 1);
 	}
 	if (0 == tree->__len) {  /* previously, the tree is empty */
 		tree->__root_node = the_node;
@@ -290,40 +290,40 @@ struct tds_avltreenode *__bintree_add_node_to( \
 /* Warning: the input `iter` must be `tree->__root_node`
  * Don't use this function any elsewhere!!!
  */
-void __bintree_clear(tds_avltree *tree, struct tds_avltreenode *iter, int force_buffer)
+static void bintree_clear(tds_avltree *tree, struct tds_avltreenode *iter, int force_buffer)
 {
 	if (NULL != iter) {
 		if (NULL == iter->__child_l && NULL == iter->__child_r)
-			__binary_tree_rm_node(tree, iter, force_buffer);
+			binary_tree_rm_node(tree, iter, force_buffer);
 		else if (NULL != iter->__child_l && NULL == iter->__child_r) {
-			__bintree_clear(tree, iter->__child_l, force_buffer);
-			__binary_tree_rm_node(tree, iter, force_buffer);
+			bintree_clear(tree, iter->__child_l, force_buffer);
+			binary_tree_rm_node(tree, iter, force_buffer);
 		} else if (NULL == iter->__child_l && NULL != iter->__child_r) {
-			__bintree_clear(tree, iter->__child_r, force_buffer);
-			__binary_tree_rm_node(tree, iter, force_buffer);
+			bintree_clear(tree, iter->__child_r, force_buffer);
+			binary_tree_rm_node(tree, iter, force_buffer);
 		} else {
-			__bintree_clear(tree, iter->__child_l, force_buffer);
-			__bintree_clear(tree, iter->__child_r, force_buffer);
-			__binary_tree_rm_node(tree, iter, force_buffer);
+			bintree_clear(tree, iter->__child_l, force_buffer);
+			bintree_clear(tree, iter->__child_r, force_buffer);
+			binary_tree_rm_node(tree, iter, force_buffer);
 		}
 	}
 }
 
-void __bintree_clear_fast(tds_avltree *tree, struct tds_avltreenode *iter)
+static void bintree_clear_fast(tds_avltree *tree, struct tds_avltreenode *iter)
 {
 	if (NULL != iter) {
 		if (NULL == iter->__child_l && NULL == iter->__child_r)
-			__node_free(iter);
+			node_free(iter);
 		else if (NULL != iter->__child_l && NULL == iter->__child_r) {
-			__bintree_clear_fast(tree, iter->__child_l);
-			__node_free(iter);
+			bintree_clear_fast(tree, iter->__child_l);
+			node_free(iter);
 		} else if (NULL == iter->__child_l && NULL != iter->__child_r) {
-			__bintree_clear_fast(tree, iter->__child_r);
-			__node_free(iter);
+			bintree_clear_fast(tree, iter->__child_r);
+			node_free(iter);
 		} else {
-			__bintree_clear_fast(tree, iter->__child_l);
-			__bintree_clear_fast(tree, iter->__child_r);
-			__node_free(iter);
+			bintree_clear_fast(tree, iter->__child_l);
+			bintree_clear_fast(tree, iter->__child_r);
+			node_free(iter);
 		}
 	}
 }
@@ -355,7 +355,7 @@ tds_avltree *tds_avltree_create_g(size_t elesize, size_t bufferlim)
 
 tds_avltree *tds_avltree_create(size_t elesize)
 {
-	return tds_avltree_create_g(elesize, __avltree_buffer_limit);
+	return tds_avltree_create_g(elesize, tds_avltree_buffer_limit);
 }
 
 void tds_avltree_free_buffer(tds_avltree *tree)
@@ -366,7 +366,7 @@ void tds_avltree_free_buffer(tds_avltree *tree)
 	while (NULL != buffer_node) {
 		buffer_node_freed = buffer_node;
 		buffer_node = buffer_node->__child_l;
-		__node_free(buffer_node_freed);
+		node_free(buffer_node_freed);
 	}
 	tree->__buffer_head = NULL;
 }
@@ -374,7 +374,7 @@ void tds_avltree_free_buffer(tds_avltree *tree)
 void tds_avltree_free(tds_avltree *tree)
 {
 	assert(NULL != tree);
-	__bintree_clear_fast(tree, tree->__root_node);
+	bintree_clear_fast(tree, tree->__root_node);
 	tds_avltree_free_buffer(tree);
 	free(tree);
 }
@@ -419,13 +419,13 @@ tds_avltreeiter *tds_avltreeiter_back(const tds_avltree *tree)
 void *tds_avltree_smallest(const tds_avltree *tree)
 {
 	tds_avltreeiter *the_node = tds_avltreeiter_front(tree);
-	return __node_data(the_node);
+	return node_data(the_node);
 }
 
 void *tds_avltree_largest(const tds_avltree *tree)
 {
 	tds_avltreeiter *the_node = tds_avltreeiter_back(tree);
-	return __node_data(the_node);
+	return node_data(the_node);
 }
 
 tds_avltreeiter *tds_avltree_root(const tds_avltree *tree)
@@ -436,7 +436,7 @@ tds_avltreeiter *tds_avltree_root(const tds_avltree *tree)
 void *tds_avltreeiter_data(tds_avltreeiter *iter)
 {
 	assert(NULL != iter);
-	return __node_data(iter);
+	return node_data(iter);
 }
 
 tds_avltreeiter *tds_avltreeiter_next(tds_avltreeiter *iter)
@@ -519,7 +519,7 @@ tds_avltreeiter *tds_avltreeiter_rightchild(const tds_avltreeiter *iter)
 	return iter->__child_r;
 }
 
-tds_avltreeiter *__avltree_getiter_g( \
+static tds_avltreeiter *avltree_getiter_g( \
 	const tds_avltree *tree, void *key, tds_fcmp_t _f, int *is_left)
 {
 	struct tds_avltreenode *node = NULL;
@@ -529,7 +529,7 @@ tds_avltreeiter *__avltree_getiter_g( \
 	node = tree->__root_node;  /* initialization */
 
 	while (NULL != node) {
-		switch (_f(key, __node_data(node))) {
+		switch (_f(key, node_data(node))) {
 		case -1:  /* key < node */
 			node = node->__child_l;
 			*is_left = 1;
@@ -548,7 +548,7 @@ tds_avltreeiter *__avltree_getiter_g( \
 tds_avltreeiter *tds_avltree_getiter(const tds_avltree *tree, void *key, tds_fcmp_t _f)
 {
 	int left = 0;
-	return __avltree_getiter_g(tree, key, _f, &left);
+	return avltree_getiter_g(tree, key, _f, &left);
 }
 
 void *tds_avltree_get(const tds_avltree *tree, void *key, tds_fcmp_t _f)
@@ -558,7 +558,7 @@ void *tds_avltree_get(const tds_avltree *tree, void *key, tds_fcmp_t _f)
 	if (NULL == (the_node = tds_avltree_getiter(tree, key, _f)))
 		return NULL;
 	else
-		return __node_data(the_node);
+		return node_data(the_node);
 }
 
 /* Right rotation: Assumption: `node.child_l != NULL`
@@ -569,7 +569,7 @@ void *tds_avltree_get(const tds_avltree *tree, void *key, tds_fcmp_t _f)
  *       / \                  / \
  *     .   c_lr            c_lr  ..
  */
-struct tds_avltreenode *__avltree_rotation_r(struct tds_avltreenode *node)
+static struct tds_avltreenode *avltree_rotation_r(struct tds_avltreenode *node)
 {
 	struct tds_avltreenode *c_l = NULL;
 	struct tds_avltreenode *c_lr = NULL;
@@ -591,10 +591,10 @@ struct tds_avltreenode *__avltree_rotation_r(struct tds_avltreenode *node)
 	node->__child_l = c_lr;
 	if (NULL != c_lr)
 		c_lr->__father = node;
-	__node_update_height_upwardly(node, 2);
-	__node_update_height_upwardly(c_l, 2);
+	node_update_height_upwardly(node, 2);
+	node_update_height_upwardly(c_l, 2);
 	if (NULL != c_l->__father)
-		__node_update_height_upwardly(c_l->__father, 1);
+		node_update_height_upwardly(c_l->__father, 1);
 	return c_l;
 }
 
@@ -606,7 +606,7 @@ struct tds_avltreenode *__avltree_rotation_r(struct tds_avltreenode *node)
  *         / \          / \
  *      c_rl  .       ..  c_rl
  */
-struct tds_avltreenode *__avltree_rotation_l(struct tds_avltreenode *node)
+static struct tds_avltreenode *avltree_rotation_l(struct tds_avltreenode *node)
 {
 	struct tds_avltreenode *c_r = NULL;
 	struct tds_avltreenode *c_rl = NULL;
@@ -628,16 +628,16 @@ struct tds_avltreenode *__avltree_rotation_l(struct tds_avltreenode *node)
 	node->__child_r = c_rl;
 	if (NULL != c_rl)
 		c_rl->__father = node;
-	__node_update_height_upwardly(node, 2);
-	__node_update_height_upwardly(c_r, 2);
+	node_update_height_upwardly(node, 2);
+	node_update_height_upwardly(c_r, 2);
 	if (NULL != c_r->__father)
-		__node_update_height_upwardly(c_r->__father, 1);
+		node_update_height_upwardly(c_r->__father, 1);
 	return c_r;
 }
 
 /* Rebalance the `node` when it is unbalanced
  */
-struct tds_avltreenode *__avltree_rebalance(struct tds_avltreenode *node)
+static struct tds_avltreenode *avltree_rebalance(struct tds_avltreenode *node)
 {
 	/* Case 1: RR type   Case 2: LL type   Case 3: LR type   Case 4: RL type
 	 *       |                   |               |                 |
@@ -650,12 +650,12 @@ struct tds_avltreenode *__avltree_rebalance(struct tds_avltreenode *node)
 	 */
 	int bfac_node = 0;
 	assert(NULL != node);
-	bfac_node = __node_balace_factor(node);
+	bfac_node = node_balace_factor(node);
 
 	if (bfac_node == 2)
-		return __avltree_rotation_l(node);
+		return avltree_rotation_l(node);
 	if (bfac_node == -2)
-		return __avltree_rotation_r(node);
+		return avltree_rotation_r(node);
 	return node;
 }
 
@@ -675,7 +675,7 @@ int tds_avltree_insert(tds_avltree *tree, void *ele, tds_fcmp_t _f)
 		node_father = node;
 
 		/* strictly less: `ele < node_father.data` */
-		if (-1 == _f(ele, __node_data(node_father))) {
+		if (-1 == _f(ele, node_data(node_father))) {
 			node = node_father->__child_l;
 			is_left = 1;
 		} else {
@@ -683,18 +683,18 @@ int tds_avltree_insert(tds_avltree *tree, void *ele, tds_fcmp_t _f)
 			is_left = 0;
 		}
 	}
-	if (NULL == (node = __bintree_add_node_to(tree, node_father, is_left))) {
+	if (NULL == (node = bintree_add_node_to(tree, node_father, is_left))) {
 		printf("Error ... tds_avltree_insert\n");
 		return 0;  /* failure */
 	}
-	memcpy(__node_data(node), ele, tree->__elesize);
+	memcpy(node_data(node), ele, tree->__elesize);
 	/*
 	 * Re-balancing
 	 * `node_father` is balanced, hence we start searching from its father
 	 */
 	while (NULL != node_father && NULL != node_father->__father) {
 		struct tds_avltreenode *node_grandpa = node_father->__father;
-		struct tds_avltreenode *tmprt = __avltree_rebalance(node_grandpa);
+		struct tds_avltreenode *tmprt = avltree_rebalance(node_grandpa);
 		if (node_grandpa != tmprt) {  /* rotated */
 			if (node_grandpa == tree->__root_node)
 				tree->__root_node = tmprt;
@@ -717,17 +717,17 @@ int avltree_delete_g(tds_avltree *tree, void *key, tds_fcmp_t _f, int force_buff
 	assert(NULL != key);
 	assert(NULL != _f);
 
-	if (NULL == (node = __avltree_getiter_g(tree, key, _f, &left))) {
+	if (NULL == (node = avltree_getiter_g(tree, key, _f, &left))) {
 		printf("Error ... tds_avltree_delete\n");
 		return 0;  /* failure */
 	}
-	node_father = __binary_tree_rm_node(tree, node, force_buffer);
+	node_father = binary_tree_rm_node(tree, node, force_buffer);
 	/*
 	 * Re-balancing
 	 * We start searching from `node_father`, the father of deleted node
 	 */
 	while (NULL != node_father) {
-		struct tds_avltreenode *tmprt = __avltree_rebalance(node_father);
+		struct tds_avltreenode *tmprt = avltree_rebalance(node_father);
 		if (node_father != tmprt) {  /* rotated */
 			if (node_father == tree->__root_node)
 				tree->__root_node = tmprt;

@@ -2,8 +2,8 @@
  * Copyright (C) 2022 Zhuang Linsheng <zhuanglinsheng@outlook.com>
  * License: MIT <https://opensource.org/licenses/MIT>
  */
-#ifndef __T_ARRAYLIST_H__
-#define __T_ARRAYLIST_H__
+#ifndef TDS_ARRAYLIST_H
+#define TDS_ARRAYLIST_H
 
 #include <stddef.h>
 
@@ -21,12 +21,12 @@ extern "C" {
 typedef struct tds_arraylist  tds_arraylist;
 
 /* On failure, return `NULL`
- * The initial capacity is defined in macro `__tds_arraylist_init_len` (8)
+ * The initial capacity is defined in macro `tds_arraylist_init_len` (8)
  */
 tds_arraylist *tds_arraylist_create(size_t elesize);
 
 /* On failure, return `NULL`
- * The initial capacity is at least `__tds_arraylist_init_len`, greater
+ * The initial capacity is at least `tds_arraylist_init_len`, greater
  * 	or equal to the input `capacity`
  */
 tds_arraylist *tds_arraylist_create_g(size_t elesize, size_t capacity);

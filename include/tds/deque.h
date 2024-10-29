@@ -2,8 +2,8 @@
  * Copyright (C) 2024 Zhuang Linsheng <zhuanglinsheng@outlook.com>
  * License: MIT <https://opensource.org/licenses/MIT>
  */
-#ifndef __T_DEQUE_H__
-#define __T_DEQUE_H__
+#ifndef TDS_DEQUE_H
+#define TDS_DEQUE_H
 
 #include <stddef.h>
 

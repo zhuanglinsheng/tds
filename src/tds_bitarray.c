@@ -16,7 +16,7 @@ struct tds_bitarray
 	/* `__nbyte` more spaces for data storage */
 };
 
-#define __bitarray_basic_size  sizeof(tds_bitarray)
+#define tds_bitarray_basic_size  sizeof(tds_bitarray)
 
 
 tds_bitarray *tds_bitarray_create(size_t capacity)
@@ -27,7 +27,7 @@ tds_bitarray *tds_bitarray_create(size_t capacity)
 
 	while (8 * nbyte < capacity)
 		nbyte++;
-	bitarray_total_size = __bitarray_basic_size + nbyte;
+	bitarray_total_size = tds_bitarray_basic_size + nbyte;
 
 	if (NULL == (arr = (tds_bitarray *) malloc(bitarray_total_size))) {
 		printf("Error ... tds_array_create\n");
@@ -69,7 +69,7 @@ void tds_bitarray_init(tds_bitarray *arr, int b)
 
 void *tds_bitarray_data(const tds_bitarray *arr)
 {
-	return ((char *) arr) + __bitarray_basic_size;
+	return ((char *) arr) + tds_bitarray_basic_size;
 }
 
 size_t tds_bitarray_capacity(const tds_bitarray *arr)
@@ -240,7 +240,7 @@ int tds_bitarray_resize(tds_bitarray **arr, size_t new_capacity)
 	new_nbyte = (*arr)->__nbyte;
 	while (new_capacity > 8 * new_nbyte)  /* calculate the new number of bytes */
 		new_nbyte *= 2;
-	new_total_size = __bitarray_basic_size + new_nbyte;
+	new_total_size = tds_bitarray_basic_size + new_nbyte;
 	if (NULL == (new_arr = realloc(*arr, new_total_size))) {
 		printf("Error ... tds_bitarray_resize\n");
 		return 0;  /* failure */

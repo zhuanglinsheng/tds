@@ -310,7 +310,7 @@ double tds_hashtbl_load_factor(const tds_hashtbl *tbl)
  * 	state = 0 if loc is free
  * 	state = 1 if loc is used
  */
-size_t __tds_hashtbl_getloc( \
+size_t tds_hashtbl_getloc( \
 	const tds_hashtbl *tbl, const void *key, size_t _new_capacity, int *state)
 {
 	long explorer_1 = 0;
@@ -347,7 +347,7 @@ int tds_hashtbl_contains(const tds_hashtbl *tbl, const void *key, size_t *loc)
 {
 	size_t old_capacity = tds_hashtbl_capacity(tbl);
 	int occupied = 0;
-	*loc = __tds_hashtbl_getloc(tbl, key, old_capacity, &occupied);
+	*loc = tds_hashtbl_getloc(tbl, key, old_capacity, &occupied);
 	if (!occupied)
 		return 0;
 	if (tds_bitarray_get(tbl->__mark_delete, *loc))
@@ -359,7 +359,7 @@ void *tds_hashtbl_get(const tds_hashtbl *tbl, const void *key)
 {
 	size_t old_capacity = tds_hashtbl_capacity(tbl);
 	int occupied = 0;
-	size_t loc = __tds_hashtbl_getloc(tbl, key, old_capacity, &occupied);
+	size_t loc = tds_hashtbl_getloc(tbl, key, old_capacity, &occupied);
 	if (!occupied)  /* the location is free */
 		return NULL;
 	if (tds_bitarray_get(tbl->__mark_delete, loc))  /* the location has been deleted */
@@ -371,7 +371,7 @@ int tds_hashtbl_set(tds_hashtbl *tbl, const void *pair)
 {
 	size_t old_capacity = tds_hashtbl_capacity(tbl);
 	int occupied = 0;
-	size_t loc = __tds_hashtbl_getloc(tbl, pair, old_capacity, &occupied);
+	size_t loc = tds_hashtbl_getloc(tbl, pair, old_capacity, &occupied);
 	if (!occupied)  /* the location is originally avaliable */
 		tbl->__usage++;
 	tds_array_set(tbl->__pairs, loc, pair);

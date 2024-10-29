@@ -2,8 +2,8 @@
  * Copyright (C) 2024 Zhuang Linsheng <zhuanglinsheng@outlook.com>
  * License: MIT <https://opensource.org/licenses/MIT>
  */
-#ifndef __T_SORT_H__
-#define __T_SORT_H__
+#ifndef TDS_SORT_H
+#define TDS_SORT_H
 
 #include <stddef.h>
 #include <tds.h>
@@ -18,7 +18,7 @@ extern "C" {
  * Including bubble, quick, insert, shell, select, heap and merge
  *****************************************************************************/
 
-#define __tds_sort_elesize_limit  1024
+#define ta_sort_elesize_limit  1024
 
 /* A general type of the sorting functions
  */

@@ -2,8 +2,8 @@
  * Copyright (C) 2024 Zhuang Linsheng <zhuanglinsheng@outlook.com>
  * License: MIT <https://opensource.org/licenses/MIT>
  */
-#ifndef __T_BYTEARRAY_H__
-#define __T_BYTEARRAY_H__
+#ifndef TDS_BYTEARRAY_H
+#define TDS_BYTEARRAY_H
 
 #include <stddef.h>
 

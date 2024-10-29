@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define __tds_string_initlen  8
+#define tds_string_initlen  8
 
 struct tds_string
 {
@@ -27,7 +27,7 @@ tds_string *tds_string_create_g(size_t buffersize)
 {
 	tds_string * str = NULL;
 	char *data;
-	size_t c_str_cap = __tds_string_initlen;
+	size_t c_str_cap = tds_string_initlen;
 	str = (tds_string *) malloc(sizeof(tds_string));
 
 	if (NULL == str) {
@@ -52,7 +52,7 @@ tds_string *tds_string_create_g(size_t buffersize)
 
 tds_string *tds_string_create(void)
 {
-	return tds_string_create_g(__tds_string_initlen);
+	return tds_string_create_g(tds_string_initlen);
 }
 
 tds_string *tds_string_create_substr(const tds_string *tstr, size_t pos, size_t n)

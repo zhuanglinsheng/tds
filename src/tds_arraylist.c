@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define __tds_arraylist_init_len  8
+#define tds_arraylist_init_len  8
 
 struct tds_arraylist {
 	size_t __len;
@@ -21,7 +21,7 @@ struct tds_arraylist {
 tds_arraylist *tds_arraylist_create_g(size_t elesize, size_t capacity)
 {
 	tds_arraylist *list = NULL;
-	size_t true_capacity = __tds_arraylist_init_len;
+	size_t true_capacity = tds_arraylist_init_len;
 
 	assert(elesize > 0);
 
@@ -42,7 +42,7 @@ tds_arraylist *tds_arraylist_create_g(size_t elesize, size_t capacity)
 
 tds_arraylist *tds_arraylist_create(size_t elesize)
 {
-	return tds_arraylist_create_g(elesize, __tds_arraylist_init_len);
+	return tds_arraylist_create_g(elesize, tds_arraylist_init_len);
 }
 
 tds_arraylist *tds_arraylist_force_create_g(size_t elesize, size_t capacity)
@@ -58,7 +58,7 @@ tds_arraylist *tds_arraylist_force_create_g(size_t elesize, size_t capacity)
 
 tds_arraylist *tds_arraylist_force_create(size_t elesize)
 {
-	return tds_arraylist_force_create_g(elesize, __tds_arraylist_init_len);
+	return tds_arraylist_force_create_g(elesize, tds_arraylist_init_len);
 }
 
 void tds_arraylist_free(tds_arraylist *list)

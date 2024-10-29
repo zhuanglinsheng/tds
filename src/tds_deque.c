@@ -11,8 +11,8 @@
 #include <string.h>
 
 
-#define __tds_dequq_default_blk_capacity  8
-#define __tds_dequq_default_buffer_limit  8
+#define tds_dequq_default_blk_capacity  8
+#define tds_dequq_default_buffer_limit  8
 
 struct tds_deque_blk {
 	size_t __head_loc;
@@ -20,7 +20,7 @@ struct tds_deque_blk {
 	/* additional `elesize * blk_capacity` spaces for data storage */
 };
 
-#define __blk_basic_size  sizeof(struct tds_deque_blk)
+#define tds_blk_basic_size  sizeof(struct tds_deque_blk)
 
 struct tds_deque {
 	tds_linkedlist *__blk_list;  /* created by linkedlist construction fn, containing blk pointers */
@@ -34,16 +34,17 @@ struct tds_deque {
  *
  *****************************************************************************/
 
-struct tds_deque_blk *__blk_create(size_t elesize, size_t blk_capacity, int front_aligned)
+static struct tds_deque_blk *blk_create( \
+		size_t elesize, size_t blk_capacity, int front_aligned)
 {
-	size_t total_size = __blk_basic_size + elesize * blk_capacity;
+	size_t total_size = tds_blk_basic_size + elesize * blk_capacity;
 	struct tds_deque_blk *blk = NULL;
 
 	assert(elesize > 0);
 	assert(blk_capacity > 0);
 
 	if (NULL == (blk = (struct tds_deque_blk *) malloc(total_size))) {
-		printf("Error ... __blk_create\n");
+		printf("Error ... blk_create\n");
 		return NULL;
 	}
 	blk->__head_loc = front_aligned ? 0 : blk_capacity;
@@ -51,18 +52,18 @@ struct tds_deque_blk *__blk_create(size_t elesize, size_t blk_capacity, int fron
 	return blk;
 }
 
-void __blk_free(struct tds_deque_blk *blk)
+static void blk_free(struct tds_deque_blk *blk)
 {
 	free(blk);
 }
 
-void *__blk_data(const struct tds_deque_blk *blk)
+static void *blk_data(const struct tds_deque_blk *blk)
 {
 	assert(NULL != blk);
-	return ((char *) blk) + __blk_basic_size;
+	return ((char *) blk) + tds_blk_basic_size;
 }
 
-void __blk_push_front(struct tds_deque_blk *blk, void *data, size_t elesize)
+static void blk_push_front(struct tds_deque_blk *blk, void *data, size_t elesize)
 {
 	assert(NULL != blk);
 	assert(NULL != data);
@@ -70,10 +71,10 @@ void __blk_push_front(struct tds_deque_blk *blk, void *data, size_t elesize)
 	assert(blk->__head_loc > 0);  /* key assumption */
 	blk->__head_loc--;
 	blk->__len++;
-	memcpy(((char *) __blk_data(blk)) + blk->__head_loc * elesize, data, elesize);
+	memcpy(((char *) blk_data(blk)) + blk->__head_loc * elesize, data, elesize);
 }
 
-void __blk_push_back(struct tds_deque_blk *blk, void *data, size_t elesize, size_t blk_capacity)
+static void blk_push_back(struct tds_deque_blk *blk, void *data, size_t elesize, size_t blk_capacity)
 {
 	size_t loc = 0;
 
@@ -85,23 +86,23 @@ void __blk_push_back(struct tds_deque_blk *blk, void *data, size_t elesize, size
 	loc = (blk->__head_loc) + (blk->__len);
 	assert(loc < blk_capacity);  /* key assumption */
 
-	memcpy(((char *) (__blk_data(blk))) + loc * elesize, data, elesize);
+	memcpy(((char *) (blk_data(blk))) + loc * elesize, data, elesize);
 	blk->__len++;
 }
 
-void *__blk_pop_front(struct tds_deque_blk *blk, size_t elesize)
+static void *blk_pop_front(struct tds_deque_blk *blk, size_t elesize)
 {
 	assert(NULL != blk);
 	blk->__head_loc++;
 	blk->__len--;
-	return (char *)__blk_data(blk) + (blk->__head_loc - 1) * elesize;
+	return (char *)blk_data(blk) + (blk->__head_loc - 1) * elesize;
 }
 
-void *__blk_pop_back(struct tds_deque_blk *blk, size_t elesize)
+static void *blk_pop_back(struct tds_deque_blk *blk, size_t elesize)
 {
 	assert(NULL != blk);
 	blk->__len--;
-	return (char *)__blk_data(blk) + (blk->__head_loc + blk->__len) * elesize;
+	return (char *)blk_data(blk) + (blk->__head_loc + blk->__len) * elesize;
 }
 
 
@@ -113,8 +114,8 @@ void *__blk_pop_back(struct tds_deque_blk *blk, size_t elesize)
 tds_deque *tds_deque_create_g(size_t elesize, size_t blk_capacity, size_t buffer_lim)
 {
 	tds_deque *deq = NULL;
-	size_t real_blk_capacity = __tds_dequq_default_blk_capacity;
-	size_t real_buffer_limit = __tds_dequq_default_buffer_limit;
+	size_t real_blk_capacity = tds_dequq_default_blk_capacity;
+	size_t real_buffer_limit = tds_dequq_default_buffer_limit;
 
 	assert(elesize > 0);
 
@@ -140,8 +141,8 @@ tds_deque *tds_deque_create_g(size_t elesize, size_t blk_capacity, size_t buffer
 tds_deque *tds_deque_create(size_t elesize)
 {
 	return tds_deque_create_g(elesize,\
-			__tds_dequq_default_blk_capacity,
-			__tds_dequq_default_buffer_limit);
+			tds_dequq_default_blk_capacity,
+			tds_dequq_default_buffer_limit);
 }
 
 tds_deque *tds_deque_force_create(size_t elesize)
@@ -164,7 +165,7 @@ void tds_deque_free(tds_deque *q)
 	iter = tds_linkedlistiter_head(q->__blk_list);
 	while (NULL != iter) {
 		blk = *(struct tds_deque_blk **) tds_linkedlistiter_data(iter);
-		__blk_free(blk);
+		blk_free(blk);
 		iter = tds_linkedlistiter_next(iter);
 	}
 	tds_linkedlist_free(q->__blk_list);
@@ -177,29 +178,29 @@ size_t tds_deque_nblks(const tds_deque * q)
 	return tds_linkedlist_len(q->__blk_list);
 }
 
-static int __deq_push_front_new_blk(tds_deque *q)
+static int deq_push_front_new_blk(tds_deque *q)
 {
-	struct tds_deque_blk *newblk = __blk_create(q->__elesize, q->__blk_capacity, 0);
+	struct tds_deque_blk *newblk = blk_create(q->__elesize, q->__blk_capacity, 0);
 
 	if (NULL == newblk)
 		return 0;  /* failure */
 	if (0 == tds_linkedlist_pushfront(q->__blk_list, &newblk)) {
-		__blk_free(newblk);
-		printf("Error ... __deq_push_front_new_blk\n");
+		blk_free(newblk);
+		printf("Error ... deq_push_front_new_blk\n");
 		return 0;  /* failure */
 	}
 	return 1;
 }
 
-static int __deq_push_back_new_blk(tds_deque *q)
+static int deq_push_back_new_blk(tds_deque *q)
 {
-	struct tds_deque_blk *newblk = __blk_create(q->__elesize, q->__blk_capacity, 1);
+	struct tds_deque_blk *newblk = blk_create(q->__elesize, q->__blk_capacity, 1);
 
 	if (NULL == newblk)
 		return 0;  /* failure */
 	if (0 == tds_linkedlist_pushback(q->__blk_list, &newblk)) {
-		__blk_free(newblk);
-		printf("Error ... __deq_push_back_new_blk\n");
+		blk_free(newblk);
+		printf("Error ... deq_push_back_new_blk\n");
 		return 0;  /* failure */
 	}
 	return 1;
@@ -214,7 +215,7 @@ int tds_deque_pushfront(tds_deque *q, void *ele)
 
 	/* when blk list is empty, create a new block */
 	if (0 == tds_linkedlist_len(q->__blk_list)
-	 && 0 == __deq_push_front_new_blk(q)) {
+	 && 0 == deq_push_front_new_blk(q)) {
 		printf("Error ... tds_deque_pushfront\n");
 		return 0;
 	}
@@ -223,11 +224,11 @@ int tds_deque_pushfront(tds_deque *q, void *ele)
 
 	if (front_blk->__head_loc > 0) {
 		/* when the front blk is not full */
-		__blk_push_front(front_blk, ele, q->__elesize);
+		blk_push_front(front_blk, ele, q->__elesize);
 		return 1;
 	} else {
 		/* when the front blk is full */
-		if (0 == __deq_push_front_new_blk(q)) {
+		if (0 == deq_push_front_new_blk(q)) {
 			printf("Error ... tds_deque_pushfront\n");
 			return 0;
 		}
@@ -243,7 +244,7 @@ int tds_deque_pushback(tds_deque *q, void *ele)
 	assert(NULL != q);
 
 	/* when blk list is empty, create a new block */
-	if (0 == tds_linkedlist_len(q->__blk_list) && 0 == __deq_push_back_new_blk(q)) {
+	if (0 == tds_linkedlist_len(q->__blk_list) && 0 == deq_push_back_new_blk(q)) {
 		printf("Error ... tds_deque_pushback\n");
 		return 0;
 	}
@@ -252,11 +253,11 @@ int tds_deque_pushback(tds_deque *q, void *ele)
 
 	if (back_blk->__head_loc + back_blk->__len < q->__blk_capacity) {
 		/* when the back blk is not full */
-		__blk_push_back(back_blk, ele, q->__elesize, q->__blk_capacity);
+		blk_push_back(back_blk, ele, q->__elesize, q->__blk_capacity);
 		return 1;
 	} else {
 		/* when the back blk is full */
-		if (0 == __deq_push_back_new_blk(q)) {
+		if (0 == deq_push_back_new_blk(q)) {
 			printf("Error ... tds_deque_pushback\n");
 			return 0;
 		}
@@ -282,7 +283,7 @@ void *tds_deque_popfront(tds_deque *q)
 		tds_linkedlist_popfront(q->__blk_list);
 		return tds_deque_popfront(q);
 	} else
-		return __blk_pop_front(front_blk, q->__elesize);
+		return blk_pop_front(front_blk, q->__elesize);
 }
 
 void *tds_deque_popback(tds_deque *q)
@@ -302,7 +303,7 @@ void *tds_deque_popback(tds_deque *q)
 		tds_linkedlist_popback(q->__blk_list);
 		return tds_deque_popback(q);
 	} else
-		return __blk_pop_back(back_blk, q->__elesize);
+		return blk_pop_back(back_blk, q->__elesize);
 }
 
 size_t tds_deque_len(const tds_deque * q)
@@ -349,7 +350,7 @@ void *tds_deque_get(const tds_deque * q, size_t loc)
 
 		/* found the block */
 		if (idx + blk->__len > loc) {
-			char *p = __blk_data(blk);
+			char *p = blk_data(blk);
 			return p + (blk->__head_loc + loc - idx) * q->__elesize;
 		}
 		idx += blk->__len;
@@ -376,7 +377,7 @@ void tds_deque_set(tds_deque * q, size_t loc, void *data)
 		blk = *(struct tds_deque_blk **) tds_linkedlistiter_data(iter);
 
 		if (idx + blk->__len > loc) {
-			char *p = (char *) __blk_data(blk) + (blk->__head_loc + loc - idx) * q->__elesize;
+			char *p = (char *) blk_data(blk) + (blk->__head_loc + loc - idx) * q->__elesize;
 			memcpy(p, data, q->__elesize);
 			return;
 		}

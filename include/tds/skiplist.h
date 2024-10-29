@@ -2,8 +2,8 @@
  * Copyright (C) 2024 Zhuang Linsheng <zhuanglinsheng@outlook.com>
  * License: MIT <https://opensource.org/licenses/MIT>
  */
-#ifndef __T_SKIPLIST_H__
-#define __T_SKIPLIST_H__
+#ifndef TDS_SKIPLIST_H
+#define TDS_SKIPLIST_H
 
 #include <stddef.h>
 

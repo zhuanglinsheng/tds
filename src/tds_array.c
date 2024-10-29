@@ -15,14 +15,14 @@ struct tds_array {
 	/* `capacity * elesize` more spaces will be allocated for storage */
 };
 
-#define __array_basic_size  sizeof(tds_array)
+#define tds_array_basic_size  sizeof(tds_array)
 
 
 tds_array *tds_array_create(size_t elesize, size_t capacity)
 {
 	tds_array *arr = NULL;
 	size_t array_data_size = elesize * capacity;
-	size_t array_total_size = __array_basic_size + array_data_size;
+	size_t array_total_size = tds_array_basic_size + array_data_size;
 
 	if (NULL == (arr = (tds_array *) malloc(array_total_size))) {
 		printf("Error ... tds_array_create\n");
@@ -53,7 +53,7 @@ void tds_array_free(tds_array *arr)
 
 void * tds_array_data(const tds_array *arr)
 {
-	return ((char *) arr) + __array_basic_size;
+	return ((char *) arr) + tds_array_basic_size;
 }
 
 size_t tds_array_elesize(const tds_array *arr)
@@ -99,7 +99,7 @@ int tds_array_resize(tds_array **arr, size_t new_capacity)
 	if (new_capacity < (*arr)->__capacity)
 		return 1;  /* success, no need to realloc */
 	elesize = (*arr)->__elesize;
-	new_arr_total_size = __array_basic_size + elesize * new_capacity;
+	new_arr_total_size = tds_array_basic_size + elesize * new_capacity;
 	if (NULL == (new_arr = realloc(*arr, new_arr_total_size))) {
 		printf("Error ... tds_array_resize\n");
 		return 0;  /* failure */

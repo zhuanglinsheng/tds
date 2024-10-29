@@ -2,8 +2,8 @@
  * Copyright (C) 2024 Zhuang Linsheng <zhuanglinsheng@outlook.com>
  * License: MIT <https://opensource.org/licenses/MIT>
  */
-#ifndef __T_HASHTBL__
-#define __T_HASHTBL__
+#ifndef TDS_HASHTBL
+#define TDS_HASHTBL
 
 #include <stddef.h>
 #include <stdint.h>
@@ -73,7 +73,7 @@ int tds_hashtbl_rm(tds_hashtbl *tbl, const void *pair);
  * 		- If the location is free (return 0), the location is for newly inserting elements
  * 		- If the location has elements (return 1), the location is for changing existing elements
  */
-size_t __tds_hashtbl_getloc(const tds_hashtbl *tbl, const void *ele, size_t _new_capacity, int *state);
+size_t tds_hashtbl_getloc(const tds_hashtbl *tbl, const void *ele, size_t _new_capacity, int *state);
 
 #ifdef __cplusplus
 }

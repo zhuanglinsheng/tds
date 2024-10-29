@@ -2,8 +2,8 @@
  * Copyright (C) 2024 Zhuang Linsheng <zhuanglinsheng@outlook.com>
  * License: MIT <https://opensource.org/licenses/MIT>
  */
-#ifndef __T_RBTREE_H__
-#define __T_RBTREE_H__
+#ifndef TDS_RBTREE_H
+#define TDS_RBTREE_H
 
 #include <stddef.h>
 

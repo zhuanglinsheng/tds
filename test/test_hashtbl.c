@@ -21,7 +21,7 @@ struct pair {
  *
  * 	- tds_hashtbl_force_set
  * 	- tds_hashtbl_get
- * 	- __tds_hashtbl_getloc
+ * 	- tds_hashtbl_getloc
  *
  * 	- tds_hashtbl_rm
  */

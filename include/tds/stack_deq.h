@@ -2,8 +2,8 @@
  * Copyright (C) 2024 Zhuang Linsheng <zhuanglinsheng@outlook.com>
  * License: MIT <https://opensource.org/licenses/MIT>
  */
-#ifndef __T_STACK_DEQ_H__
-#define __T_STACK_DEQ_H__
+#ifndef TDS_STACK_DEQ_H
+#define TDS_STACK_DEQ_H
 
 #include <stddef.h>
 

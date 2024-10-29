@@ -2,8 +2,8 @@
  * Copyright (C) 2024 Zhuang Linsheng <zhuanglinsheng@outlook.com>
  * License: MIT <https://opensource.org/licenses/MIT>
  */
-#ifndef __T_NBITSARRAY_H__
-#define __T_NBITSARRAY_H__
+#ifndef TDS_NBITSARRAY_H
+#define TDS_NBITSARRAY_H
 
 #include <stddef.h>
 
