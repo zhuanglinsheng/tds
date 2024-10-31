@@ -43,11 +43,23 @@ The library is expected to include the following components:
 
 ## Compare with C++ STL
 
-1. Compare `std::map` with `avltree`.
+Environment: Debian 12, Apple Virtualization Generic Platform.
 
-    Based on my tests on Linux, `avltree` is slightly faster than `std::map` in searching but slower in deletion. 
+1. `std::map` with `avltree` and `rbtree` (10,000,000 integers)
 
-    See [cmp_avltree.cpp](./cmp/cmp_avltree.cpp). 
+   See [cmp_avltree.cpp](./cmp/cmp_avltree.cpp).
+
+   |          | Opt. Level | Insert (ms) | Search (ms) | Delete (ms) |
+   |----------|------------|-------------|-------------|-------------|
+   | std::map | O0         | 5030        | 2491        | 2593        |
+   | std::map | O1         | 2560        | 1201        | 808         |
+   | std::map | O2         | 2522        | 1238        | 878         |
+   | std::map | O3         | 2524        | 1182        | 828         |
+   | avltree  | O0         | 5537        | 1549        | 4099        |
+   | avltree  | O1         | 2747        | 979         | 2317        |
+   | avltree  | O2         | 2555        | 1005        | 2067        |
+   | avltree  | O3         | 2894        | 1157        | 1850        |
+
 
 ## Install
 
