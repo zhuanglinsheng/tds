@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define n  1000
+#define n  10000
 
-int cmp_int(void *_a, void *_b)
+int cmp_int(const void *_a, const void *_b)
 {
 	int *p1 = (int *)_a;
 	int *p2 = (int *)_b;
@@ -104,6 +104,11 @@ void assign_rand(int *arr_1, int *arr_2, int *arr_3, size_t len)
 		arr_3[idx] = rand();
 }
 
+void qsort_wrapper(void *arr, size_t elesize, size_t len, int inc, tds_fcmp_t *_f, int ascend)
+{
+	qsort(arr, len, elesize, _f);
+}
+
 void print_arr(int *arr, size_t len, int inc)
 {
 	size_t idx = 0;
@@ -123,56 +128,63 @@ int main(void)
 	test_worst(ta_sort_bubble, arr_buffer, 2);
 	test_best(ta_sort_bubble, arr_buffer, 2);
 	assign_rand(arr_rand_1, arr_rand_2, arr_rand_3, n);
-	test_rand(ta_sort_bubble, arr_rand_1, 1, 0);
-	test_rand(ta_sort_bubble, arr_rand_2, 1, 0);
-	test_rand(ta_sort_bubble, arr_rand_3, 1, 0);
+	test_rand(ta_sort_bubble, arr_rand_1, 1, 1);
+	test_rand(ta_sort_bubble, arr_rand_2, 1, 1);
+	test_rand(ta_sort_bubble, arr_rand_3, 1, 1);
 
 	printf("\nInsertion sort:\n");
 	test_worst(ta_sort_insert, arr_buffer, 2);
 	test_best(ta_sort_insert, arr_buffer, 2);
 	assign_rand(arr_rand_1, arr_rand_2, arr_rand_3, n);
-	test_rand(ta_sort_insert, arr_rand_1, 1, 0);
-	test_rand(ta_sort_insert, arr_rand_2, 1, 0);
-	test_rand(ta_sort_insert, arr_rand_3, 1, 0);
+	test_rand(ta_sort_insert, arr_rand_1, 1, 1);
+	test_rand(ta_sort_insert, arr_rand_2, 1, 1);
+	test_rand(ta_sort_insert, arr_rand_3, 1, 1);
 
 	printf("\nSelection sort:\n");
 	test_worst(ta_sort_select, arr_buffer, 2);
 	test_best(ta_sort_select, arr_buffer, 2);
 	assign_rand(arr_rand_1, arr_rand_2, arr_rand_3, n);
-	test_rand(ta_sort_select, arr_rand_1, 1, 0);
-	test_rand(ta_sort_select, arr_rand_2, 1, 0);
-	test_rand(ta_sort_select, arr_rand_3, 1, 0);
+	test_rand(ta_sort_select, arr_rand_1, 1, 1);
+	test_rand(ta_sort_select, arr_rand_2, 1, 1);
+	test_rand(ta_sort_select, arr_rand_3, 1, 1);
 
 	printf("\nShell sort:\n");
 	test_worst(ta_sort_shell, arr_buffer, 2);
 	test_best(ta_sort_shell, arr_buffer, 2);
 	assign_rand(arr_rand_1, arr_rand_2, arr_rand_3, n);
-	test_rand(ta_sort_shell, arr_rand_1, 1, 0);
-	test_rand(ta_sort_shell, arr_rand_2, 1, 0);
-	test_rand(ta_sort_shell, arr_rand_3, 1, 0);
+	test_rand(ta_sort_shell, arr_rand_1, 1, 1);
+	test_rand(ta_sort_shell, arr_rand_2, 1, 1);
+	test_rand(ta_sort_shell, arr_rand_3, 1, 1);
 
 	printf("\nMerging sort:\n");
 	test_worst(ta_sort_merge, arr_buffer, 2);
 	test_best(ta_sort_merge, arr_buffer, 2);
 	assign_rand(arr_rand_1, arr_rand_2, arr_rand_3, n);
-	test_rand(ta_sort_merge, arr_rand_1, 1, 0);
-	test_rand(ta_sort_merge, arr_rand_2, 1, 0);
-	test_rand(ta_sort_merge, arr_rand_3, 1, 0);
+	test_rand(ta_sort_merge, arr_rand_1, 1, 1);
+	test_rand(ta_sort_merge, arr_rand_2, 1, 1);
+	test_rand(ta_sort_merge, arr_rand_3, 1, 1);
 
 	printf("\nQuick sort:\n");
 	test_worst(ta_sort_quick, arr_buffer, 2);
 	test_best(ta_sort_quick, arr_buffer, 2);
 	assign_rand(arr_rand_1, arr_rand_2, arr_rand_3, n);
-	test_rand(ta_sort_quick, arr_rand_1, 1, 0);
-	test_rand(ta_sort_quick, arr_rand_2, 1, 0);
-	test_rand(ta_sort_quick, arr_rand_3, 1, 0);
+	test_rand(ta_sort_quick, arr_rand_1, 1, 1);
+	test_rand(ta_sort_quick, arr_rand_2, 1, 1);
+	test_rand(ta_sort_quick, arr_rand_3, 1, 1);
 
 	printf("\nHeap sort:\n");
 	test_worst(ta_sort_heap, arr_buffer, 2);
 	test_best(ta_sort_heap, arr_buffer, 2);
 	assign_rand(arr_rand_1, arr_rand_2, arr_rand_3, n);
-	test_rand(ta_sort_heap, arr_rand_1, 1, 0);
-	test_rand(ta_sort_heap, arr_rand_2, 1, 0);
-	test_rand(ta_sort_heap, arr_rand_3, 1, 0);
+	test_rand(ta_sort_heap, arr_rand_1, 1, 1);
+	test_rand(ta_sort_heap, arr_rand_2, 1, 1);
+	test_rand(ta_sort_heap, arr_rand_3, 1, 1);
+
+	printf("\n<stdlib> qsort:\n");
+	assign_rand(arr_rand_1, arr_rand_2, arr_rand_3, n);
+	test_rand(qsort_wrapper, arr_rand_1, 1, 1);
+	test_rand(qsort_wrapper, arr_rand_2, 1, 1);
+	test_rand(qsort_wrapper, arr_rand_3, 1, 1);
+
 	return 0;
 }

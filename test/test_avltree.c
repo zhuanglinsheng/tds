@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int cmp_int(void *a, void *b)
+int cmp_int(const void *a, const void *b)
 {
 	int *pa = (int *)a;
 	int *pb = (int *)b;
