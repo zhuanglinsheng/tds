@@ -14,7 +14,7 @@ extern "C" {
 /******************************************************************************
  * Array
  *
- * Array is a contiguous block of memory that cannot be changed once allocated,
+ * Array is a continuous block of memory that cannot be resized once allocated,
  * unless the reallocation function is called
  *****************************************************************************/
 

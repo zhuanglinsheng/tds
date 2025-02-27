@@ -35,14 +35,14 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -flto")
 ## set the value of `CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT` to be
 ## `true` by switch the comments:
 ##
-set(CMAKE_INSTALL_PREFIX "/usr/local" CACHE PATH "..." FORCE)
-set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT false)
+##set(CMAKE_INSTALL_PREFIX "/usr/local" CACHE PATH "..." FORCE)
+set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT true)
 ##
 ## Then set the installation location below by changing the default value
 ## of `CMAKE_INSTALL_PREFIX`:
 ##
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	set(CMAKE_INSTALL_PREFIX "$HOME/.local" CACHE PATH "..." FORCE)
+	set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "..." FORCE)
 endif()
 set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 ##

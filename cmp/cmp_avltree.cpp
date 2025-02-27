@@ -9,7 +9,7 @@ struct avl_pair {
 	int __data;
 };
 
-int cmp_pair(void *pair_1, void *pair_2)
+int cmp_pair(const void *pair_1, const void *pair_2)
 {
 	struct avl_pair *p1 = (struct avl_pair *) pair_1;
 	struct avl_pair *p2 = (struct avl_pair *) pair_2;
